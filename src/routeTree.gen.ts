@@ -10,33 +10,73 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as SafariRouteImport } from './routes/safari'
+import { Route as ToursIndexRouteImport } from './routes/tours.index'
+import { Route as ToursSlugRouteImport } from './routes/tours.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SafariRoute = SafariRouteImport.update({
+  id: '/safari',
+  path: '/safari',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToursIndexRoute = ToursIndexRouteImport.update({
+  id: '/tours/',
+  path: '/tours/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToursSlugRoute = ToursSlugRouteImport.update({
+  id: '/tours/$slug',
+  path: '/tours/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
+  '/safari': typeof SafariRoute
+  '/tours/$slug': typeof ToursSlugRoute
+  '/tours/': typeof ToursIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
+  '/safari': typeof SafariRoute
+  '/tours/$slug': typeof ToursSlugRoute
+  '/tours': typeof ToursIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
+  '/safari': typeof SafariRoute
+  '/tours/$slug': typeof ToursSlugRoute
+  '/tours/': typeof ToursIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours'
+  id: '__root__' | '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GalleryRoute: typeof GalleryRoute
+  SafariRoute: typeof SafariRoute
+  ToursSlugRoute: typeof ToursSlugRoute
+  ToursIndexRoute: typeof ToursIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +88,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safari': {
+      id: '/safari'
+      path: '/safari'
+      fullPath: '/safari'
+      preLoaderRoute: typeof SafariRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tours/': {
+      id: '/tours/'
+      path: '/tours'
+      fullPath: '/tours/'
+      preLoaderRoute: typeof ToursIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tours/$slug': {
+      id: '/tours/$slug'
+      path: '/tours/$slug'
+      fullPath: '/tours/$slug'
+      preLoaderRoute: typeof ToursSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GalleryRoute: GalleryRoute,
+  SafariRoute: SafariRoute,
+  ToursSlugRoute: ToursSlugRoute,
+  ToursIndexRoute: ToursIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
