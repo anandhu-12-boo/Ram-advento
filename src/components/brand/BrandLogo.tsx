@@ -18,7 +18,7 @@ export function BrandLogo({ className, size = 48, interactive = false, priority 
     <motion.span
       className={cn("relative inline-block shrink-0", className)}
       style={{ width: size, height: size }}
-      whileHover={interactive && !reduce ? { scale: 1.06, rotate: -3 } : undefined}
+      {...(interactive && !reduce ? { whileHover: { scale: 1.06, rotate: -3 } } : {})}
       transition={{ type: "spring", stiffness: 260, damping: 18 }}
     >
       {interactive && (
