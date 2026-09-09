@@ -16,18 +16,14 @@ export function BrandLogo({ className, size = 48, interactive = false, priority 
 
   return (
     <motion.span
-      className={cn("relative inline-block shrink-0", className)}
+      className={cn(
+        "group/logo relative inline-block shrink-0 overflow-hidden rounded-full",
+        className,
+      )}
       style={{ width: size, height: size }}
       {...(interactive && !reduce ? { whileHover: { scale: 1.06, rotate: -3 } } : {})}
       transition={{ type: "spring", stiffness: 260, damping: 18 }}
     >
-      {interactive && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 hover:opacity-100"
-          style={{ boxShadow: "0 0 30px 4px color-mix(in oklab, var(--sand) 45%, transparent)" }}
-        />
-      )}
       <img
         src={brandLogo}
         alt="Ram Adventure — Munnar Jeep Safari 4x4 badge"
@@ -35,8 +31,15 @@ export function BrandLogo({ className, size = 48, interactive = false, priority 
         height={size}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
-        className="h-full w-full select-none object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.55)]"
+        className="h-full w-full scale-[1.1] select-none object-cover"
       />
+      {interactive && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover/logo:opacity-100"
+          style={{ boxShadow: "inset 0 0 24px 2px color-mix(in oklab, var(--sand) 55%, transparent)" }}
+        />
+      )}
     </motion.span>
   );
 }
