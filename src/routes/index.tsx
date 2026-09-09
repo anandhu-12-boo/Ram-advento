@@ -49,15 +49,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
 
   useEffect(() => {
-    if (hasPlayedIntro()) {
-      setReady(true);
-    } else {
-      setShowIntro(true);
-    }
+    if (!hasPlayedIntro()) setShowIntro(true);
   }, []);
 
   return (
