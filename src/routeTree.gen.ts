@@ -10,6 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as BookRouteImport } from './routes/book'
+import { Route as BookingConfirmedRouteImport } from './routes/booking-confirmed'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as SafariRouteImport } from './routes/safari'
 import { Route as ToursIndexRouteImport } from './routes/tours.index'
@@ -18,6 +22,26 @@ import { Route as ToursSlugRouteImport } from './routes/tours.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingConfirmedRoute = BookingConfirmedRouteImport.update({
+  id: '/booking-confirmed',
+  path: '/booking-confirmed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -43,6 +67,10 @@ const ToursSlugRoute = ToursSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/book': typeof BookRoute
+  '/booking-confirmed': typeof BookingConfirmedRoute
+  '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
@@ -50,6 +78,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/book': typeof BookRoute
+  '/booking-confirmed': typeof BookingConfirmedRoute
+  '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
@@ -58,6 +90,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/book': typeof BookRoute
+  '/booking-confirmed': typeof BookingConfirmedRoute
+  '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
@@ -65,14 +101,46 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/book'
+    | '/booking-confirmed'
+    | '/contact'
+    | '/gallery'
+    | '/safari'
+    | '/tours/$slug'
+    | '/tours/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours'
-  id: '__root__' | '/' | '/gallery' | '/safari' | '/tours/$slug' | '/tours/'
+  to:
+    | '/'
+    | '/about'
+    | '/book'
+    | '/booking-confirmed'
+    | '/contact'
+    | '/gallery'
+    | '/safari'
+    | '/tours/$slug'
+    | '/tours'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/book'
+    | '/booking-confirmed'
+    | '/contact'
+    | '/gallery'
+    | '/safari'
+    | '/tours/$slug'
+    | '/tours/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  BookRoute: typeof BookRoute
+  BookingConfirmedRoute: typeof BookingConfirmedRoute
+  ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
   SafariRoute: typeof SafariRoute
   ToursSlugRoute: typeof ToursSlugRoute
@@ -86,6 +154,34 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking-confirmed': {
+      id: '/booking-confirmed'
+      path: '/booking-confirmed'
+      fullPath: '/booking-confirmed'
+      preLoaderRoute: typeof BookingConfirmedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -121,6 +217,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  BookRoute: BookRoute,
+  BookingConfirmedRoute: BookingConfirmedRoute,
+  ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,
   SafariRoute: SafariRoute,
   ToursSlugRoute: ToursSlugRoute,
