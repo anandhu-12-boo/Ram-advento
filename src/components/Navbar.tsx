@@ -1,4 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,6 +17,53 @@ const links = [
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
 ] as const;
+
+function AccountLinks({ stacked = false }: { stacked?: boolean }) {
+  const { user, isAdmin, displayName } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  };
+
+  const cls = stacked
+    ? "block border-b border-white/5 py-3 font-display text-2xl text-mist"
+    : "text-[0.78rem] font-semibold tracking-[0.16em] text-mist/80 uppercase transition-colors hover:text-sand";
+
+  if (!user) {
+    return (
+      <Link to="/login" className={cls}>
+        Login
+      </Link>
+    );
+  }
+
+  return (
+    <>
+      {!stacked && (
+        <span className="text-[0.78rem] font-semibold tracking-[0.16em] text-sand/80 uppercase">
+          {displayName}
+        </span>
+      )}
+      <Link to="/my-account/bookings" className={cls}>
+        My bookings
+      </Link>
+      {isAdmin && (
+        <Link to="/my-account" className={cls}>
+          My account
+        </Link>
+      )}
+      <button type="button" onClick={signOut} className={cls}>
+        Logout
+      </button>
+    </>
+  );
+}
+
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -65,12 +115,15 @@ export function Navbar() {
           ))}
         </ul>
 
-        <Link
-          to="/book"
-          className="ml-auto hidden shrink-0 rounded-sm bg-sand px-5 py-2.5 text-[0.72rem] font-bold tracking-[0.2em] text-forest-deep uppercase transition-all duration-300 hover:bg-mist hover:shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--sand)_70%,transparent)] lg:ml-0 lg:block"
-        >
-          Book Now
-        </Link>
+        <div className="ml-auto hidden shrink-0 items-center gap-5 lg:ml-6 lg:flex">
+          <AccountLinks />
+          <Link
+            to="/book"
+            className="rounded-sm bg-sand px-5 py-2.5 text-[0.72rem] font-bold tracking-[0.2em] text-forest-deep uppercase transition-all duration-300 hover:bg-mist"
+          >
+            Book Now
+          </Link>
+        </div>
 
         <button
           type="button"
@@ -104,6 +157,9 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <AccountLinks stacked />
+              </li>
             </ul>
           </motion.div>
         )}

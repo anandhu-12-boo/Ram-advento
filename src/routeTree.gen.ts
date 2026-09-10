@@ -10,18 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as BookingConfirmedRouteImport } from './routes/booking-confirmed'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SafariRouteImport } from './routes/safari'
 import { Route as ToursIndexRouteImport } from './routes/tours.index'
 import { Route as ToursSlugRouteImport } from './routes/tours.$slug'
+import { Route as AuthenticatedMyAccountIndexRouteImport } from './routes/_authenticated/my-account.index'
+import { Route as AuthenticatedMyAccountBookingsIndexRouteImport } from './routes/_authenticated/my-account.bookings.index'
+import { Route as AuthenticatedMyAccountBookingsBookingIdRouteImport } from './routes/_authenticated/my-account.bookings.$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -44,9 +56,29 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SafariRoute = SafariRouteImport.update({
@@ -64,6 +96,24 @@ const ToursSlugRoute = ToursSlugRouteImport.update({
   path: '/tours/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMyAccountIndexRoute =
+  AuthenticatedMyAccountIndexRouteImport.update({
+    id: '/my-account/',
+    path: '/my-account/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMyAccountBookingsIndexRoute =
+  AuthenticatedMyAccountBookingsIndexRouteImport.update({
+    id: '/my-account/bookings/',
+    path: '/my-account/bookings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMyAccountBookingsBookingIdRoute =
+  AuthenticatedMyAccountBookingsBookingIdRouteImport.update({
+    id: '/my-account/bookings/$bookingId',
+    path: '/my-account/bookings/$bookingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,10 +121,17 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours/': typeof ToursIndexRoute
+  '/my-account/': typeof AuthenticatedMyAccountIndexRoute
+  '/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
+  '/my-account/bookings/': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,22 +139,37 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours': typeof ToursIndexRoute
+  '/my-account': typeof AuthenticatedMyAccountIndexRoute
+  '/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
+  '/my-account/bookings': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours/': typeof ToursIndexRoute
+  '/_authenticated/my-account/': typeof AuthenticatedMyAccountIndexRoute
+  '/_authenticated/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
+  '/_authenticated/my-account/bookings/': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,10 +179,17 @@ export interface FileRouteTypes {
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours/'
+    | '/my-account/'
+    | '/my-account/bookings/$bookingId'
+    | '/my-account/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,30 +197,50 @@ export interface FileRouteTypes {
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours'
+    | '/my-account'
+    | '/my-account/bookings/$bookingId'
+    | '/my-account/bookings'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours/'
+    | '/_authenticated/my-account/'
+    | '/_authenticated/my-account/bookings/$bookingId'
+    | '/_authenticated/my-account/bookings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   BookRoute: typeof BookRoute
   BookingConfirmedRoute: typeof BookingConfirmedRoute
   ContactRoute: typeof ContactRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GalleryRoute: typeof GalleryRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SafariRoute: typeof SafariRoute
   ToursSlugRoute: typeof ToursSlugRoute
   ToursIndexRoute: typeof ToursIndexRoute
@@ -154,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -184,11 +290,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/safari': {
@@ -212,16 +346,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToursSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/my-account/': {
+      id: '/_authenticated/my-account/'
+      path: '/my-account'
+      fullPath: '/my-account/'
+      preLoaderRoute: typeof AuthenticatedMyAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-account/bookings/': {
+      id: '/_authenticated/my-account/bookings/'
+      path: '/my-account/bookings'
+      fullPath: '/my-account/bookings/'
+      preLoaderRoute: typeof AuthenticatedMyAccountBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-account/bookings/$bookingId': {
+      id: '/_authenticated/my-account/bookings/$bookingId'
+      path: '/my-account/bookings/$bookingId'
+      fullPath: '/my-account/bookings/$bookingId'
+      preLoaderRoute: typeof AuthenticatedMyAccountBookingsBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMyAccountIndexRoute: typeof AuthenticatedMyAccountIndexRoute
+  AuthenticatedMyAccountBookingsBookingIdRoute: typeof AuthenticatedMyAccountBookingsBookingIdRoute
+  AuthenticatedMyAccountBookingsIndexRoute: typeof AuthenticatedMyAccountBookingsIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMyAccountIndexRoute: AuthenticatedMyAccountIndexRoute,
+  AuthenticatedMyAccountBookingsBookingIdRoute:
+    AuthenticatedMyAccountBookingsBookingIdRoute,
+  AuthenticatedMyAccountBookingsIndexRoute:
+    AuthenticatedMyAccountBookingsIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   BookRoute: BookRoute,
   BookingConfirmedRoute: BookingConfirmedRoute,
   ContactRoute: ContactRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GalleryRoute: GalleryRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SafariRoute: SafariRoute,
   ToursSlugRoute: ToursSlugRoute,
   ToursIndexRoute: ToursIndexRoute,
