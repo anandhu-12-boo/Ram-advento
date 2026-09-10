@@ -14,7 +14,11 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as BookingConfirmedRouteImport } from './routes/booking-confirmed'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SafariRouteImport } from './routes/safari'
 import { Route as ToursIndexRouteImport } from './routes/tours.index'
 import { Route as ToursSlugRouteImport } from './routes/tours.$slug'
@@ -44,9 +48,29 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SafariRoute = SafariRouteImport.update({
@@ -71,7 +95,11 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours/': typeof ToursIndexRoute
@@ -82,7 +110,11 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours': typeof ToursIndexRoute
@@ -94,7 +126,11 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/booking-confirmed': typeof BookingConfirmedRoute
   '/contact': typeof ContactRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/gallery': typeof GalleryRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
   '/tours/$slug': typeof ToursSlugRoute
   '/tours/': typeof ToursIndexRoute
@@ -107,7 +143,11 @@ export interface FileRouteTypes {
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours/'
@@ -118,7 +158,11 @@ export interface FileRouteTypes {
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours'
@@ -129,7 +173,11 @@ export interface FileRouteTypes {
     | '/book'
     | '/booking-confirmed'
     | '/contact'
+    | '/forgot-password'
     | '/gallery'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/safari'
     | '/tours/$slug'
     | '/tours/'
@@ -141,7 +189,11 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   BookingConfirmedRoute: typeof BookingConfirmedRoute
   ContactRoute: typeof ContactRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GalleryRoute: typeof GalleryRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SafariRoute: typeof SafariRoute
   ToursSlugRoute: typeof ToursSlugRoute
   ToursIndexRoute: typeof ToursIndexRoute
@@ -184,11 +236,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/safari': {
@@ -221,7 +301,11 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   BookingConfirmedRoute: BookingConfirmedRoute,
   ContactRoute: ContactRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GalleryRoute: GalleryRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SafariRoute: SafariRoute,
   ToursSlugRoute: ToursSlugRoute,
   ToursIndexRoute: ToursIndexRoute,
