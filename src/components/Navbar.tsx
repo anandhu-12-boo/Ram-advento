@@ -65,12 +65,15 @@ export function Navbar() {
           ))}
         </ul>
 
-        <Link
-          to="/book"
-          className="ml-auto hidden shrink-0 rounded-sm bg-sand px-5 py-2.5 text-[0.72rem] font-bold tracking-[0.2em] text-forest-deep uppercase transition-all duration-300 hover:bg-mist hover:shadow-[0_10px_30px_-8px_color-mix(in_oklab,var(--sand)_70%,transparent)] lg:ml-0 lg:block"
-        >
-          Book Now
-        </Link>
+        <div className="ml-auto hidden shrink-0 items-center gap-5 lg:ml-6 lg:flex">
+          <AccountLinks />
+          <Link
+            to="/book"
+            className="rounded-sm bg-sand px-5 py-2.5 text-[0.72rem] font-bold tracking-[0.2em] text-forest-deep uppercase transition-all duration-300 hover:bg-mist"
+          >
+            Book Now
+          </Link>
+        </div>
 
         <button
           type="button"
