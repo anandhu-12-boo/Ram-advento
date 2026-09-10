@@ -157,6 +157,9 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <AccountLinks stacked />
+              </li>
             </ul>
           </motion.div>
         )}
