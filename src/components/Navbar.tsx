@@ -15,6 +15,53 @@ const links = [
   { label: "Contact", to: "/contact" },
 ] as const;
 
+function AccountLinks({ stacked = false }: { stacked?: boolean }) {
+  const { user, isAdmin, displayName } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  };
+
+  const cls = stacked
+    ? "block border-b border-white/5 py-3 font-display text-2xl text-mist"
+    : "text-[0.78rem] font-semibold tracking-[0.16em] text-mist/80 uppercase transition-colors hover:text-sand";
+
+  if (!user) {
+    return (
+      <Link to="/login" className={cls}>
+        Login
+      </Link>
+    );
+  }
+
+  return (
+    <>
+      {!stacked && (
+        <span className="text-[0.78rem] font-semibold tracking-[0.16em] text-sand/80 uppercase">
+          {displayName}
+        </span>
+      )}
+      <Link to="/my-account/bookings" className={cls}>
+        My bookings
+      </Link>
+      {isAdmin && (
+        <Link to="/my-account" className={cls}>
+          My account
+        </Link>
+      )}
+      <button type="button" onClick={signOut} className={cls}>
+        Logout
+      </button>
+    </>
+  );
+}
+
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
