@@ -78,7 +78,11 @@ function ResetPasswordPage() {
           />
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <button type="submit" disabled={busy} className={`${btnPrimary} w-full justify-center disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={busy}
+          className={`${btnPrimary} w-full justify-center disabled:opacity-60`}
+        >
           {busy ? "Saving…" : "Update password"}
         </button>
       </form>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -76,7 +77,9 @@ function MyBookingsPage() {
                     className="h-28 w-40 rounded-sm object-cover"
                   />
                   <div className="min-w-48 flex-1">
-                    <p className="text-[0.6rem] tracking-[0.2em] text-sand uppercase">{b.booking_id}</p>
+                    <p className="text-[0.6rem] tracking-[0.2em] text-sand uppercase">
+                      {b.booking_id}
+                    </p>
                     <p className="font-display text-2xl text-mist">{b.tours?.title}</p>
                     <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm text-mist/70 sm:grid-cols-2">
                       <div>Date: {b.booking_date}</div>
@@ -120,7 +123,11 @@ function MyBookingsPage() {
                         >
                           {cancel.isPending ? "Cancelling…" : "Yes, cancel"}
                         </button>
-                        <button type="button" onClick={() => setConfirming(null)} className={btnSmall}>
+                        <button
+                          type="button"
+                          onClick={() => setConfirming(null)}
+                          className={btnSmall}
+                        >
                           Keep it
                         </button>
                       </span>

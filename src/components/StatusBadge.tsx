@@ -30,7 +30,8 @@ export function StatusBadge({
   kind?: "booking" | "payment" | "enquiry";
   className?: string;
 }) {
-  const map = kind === "payment" ? paymentStyles : kind === "enquiry" ? enquiryStyles : bookingStyles;
+  const map =
+    kind === "payment" ? paymentStyles : kind === "enquiry" ? enquiryStyles : bookingStyles;
   return (
     <span
       className={cn(

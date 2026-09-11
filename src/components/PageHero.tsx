@@ -25,7 +25,10 @@ export function PageHero({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 1.4, ease: "easeOut" }}
       />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/40" />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/40"
+      />
       <div className="relative mx-auto w-full max-w-7xl px-6 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

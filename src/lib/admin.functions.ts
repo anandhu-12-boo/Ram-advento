@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Supabase row shapes are runtime-generated. */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -127,15 +128,14 @@ export const getAdminBooking = createServerFn({ method: "GET" })
 
 export const updateBookingStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: { bookingId: string; bookingStatus?: string; paymentStatus?: string }) =>
-      z
-        .object({
-          bookingId: z.string().min(3),
-          bookingStatus: statusSchema.optional(),
-          paymentStatus: paymentSchema.optional(),
-        })
-        .parse(input),
+  .inputValidator((input: { bookingId: string; bookingStatus?: string; paymentStatus?: string }) =>
+    z
+      .object({
+        bookingId: z.string().min(3),
+        bookingStatus: statusSchema.optional(),
+        paymentStatus: paymentSchema.optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context as Ctx);

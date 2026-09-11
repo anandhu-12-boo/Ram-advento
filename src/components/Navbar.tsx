@@ -53,8 +53,8 @@ function AccountLinks({ stacked = false }: { stacked?: boolean }) {
         My bookings
       </Link>
       {isAdmin && (
-        <Link to="/my-account" className={cls}>
-          My account
+        <Link to="/admin" className={cls}>
+          Admin console
         </Link>
       )}
       <button type="button" onClick={signOut} className={cls}>
@@ -63,7 +63,6 @@ function AccountLinks({ stacked = false }: { stacked?: boolean }) {
     </>
   );
 }
-
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -94,7 +93,9 @@ export function Navbar() {
         >
           <BrandLogo interactive priority size={scrolled ? 42 : 54} />
           <span className="hidden leading-none sm:block">
-            <span className="font-display block text-xl tracking-wide text-mist">RAM ADVENTURE</span>
+            <span className="font-display block text-xl tracking-wide text-mist">
+              RAM ADVENTURE
+            </span>
             <span className="block text-[0.6rem] font-semibold tracking-[0.28em] text-sand/80">
               MUNNAR • KERALA
             </span>
@@ -106,7 +107,7 @@ export function Navbar() {
             <li key={l.label}>
               <Link
                 to={l.to}
-                {...(("hash" in l && l.hash) ? { hash: l.hash } : {})}
+                {...("hash" in l && l.hash ? { hash: l.hash } : {})}
                 className="relative text-[0.78rem] font-semibold tracking-[0.16em] text-mist/80 uppercase transition-colors hover:text-sand after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-sand after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100"
               >
                 {l.label}
@@ -150,7 +151,7 @@ export function Navbar() {
                 <li key={l.label}>
                   <Link
                     to={l.to}
-                    {...(("hash" in l && l.hash) ? { hash: l.hash } : {})}
+                    {...("hash" in l && l.hash ? { hash: l.hash } : {})}
                     className="block border-b border-white/5 py-3 font-display text-2xl text-mist"
                   >
                     {l.label}

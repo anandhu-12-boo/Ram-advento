@@ -28,7 +28,8 @@ export const Route = createFileRoute("/booking-confirmed")({
       { title: "Adventure Confirmed | Ram Adventure Munnar" },
       {
         name: "description",
-        content: "Your Munnar jeep safari with Ram Adventure is confirmed. Booking details and next steps.",
+        content:
+          "Your Munnar jeep safari with Ram Adventure is confirmed. Booking details and next steps.",
       },
       { property: "og:title", content: "Adventure Confirmed | Ram Adventure Munnar" },
       { property: "og:description", content: "Your Munnar adventure is officially booked." },

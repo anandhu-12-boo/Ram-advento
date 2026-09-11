@@ -95,38 +95,75 @@ function RegisterPage() {
           <label className={authLabel} htmlFor="name">
             Full name
           </label>
-          <input id="name" className={authField} value={form.name} onChange={set("name")} placeholder="Anand A" />
+          <input
+            id="name"
+            className={authField}
+            value={form.name}
+            onChange={set("name")}
+            placeholder="Anand A"
+          />
         </div>
         <div>
           <label className={authLabel} htmlFor="email">
             Email
           </label>
-          <input id="email" type="email" className={authField} value={form.email} onChange={set("email")} placeholder="you@email.com" />
+          <input
+            id="email"
+            type="email"
+            className={authField}
+            value={form.email}
+            onChange={set("email")}
+            placeholder="you@email.com"
+          />
         </div>
         <div>
           <label className={authLabel} htmlFor="phone">
             Phone / WhatsApp
           </label>
-          <input id="phone" className={authField} value={form.phone} onChange={set("phone")} placeholder="+91 …" />
+          <input
+            id="phone"
+            className={authField}
+            value={form.phone}
+            onChange={set("phone")}
+            placeholder="+91 …"
+          />
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label className={authLabel} htmlFor="password">
               Password
             </label>
-            <input id="password" type="password" className={authField} value={form.password} onChange={set("password")} placeholder="8+ characters" />
+            <input
+              id="password"
+              type="password"
+              className={authField}
+              value={form.password}
+              onChange={set("password")}
+              placeholder="8+ characters"
+            />
           </div>
           <div>
             <label className={authLabel} htmlFor="confirm">
               Confirm password
             </label>
-            <input id="confirm" type="password" className={authField} value={form.confirm} onChange={set("confirm")} placeholder="Repeat password" />
+            <input
+              id="confirm"
+              type="password"
+              className={authField}
+              value={form.confirm}
+              onChange={set("confirm")}
+              placeholder="Repeat password"
+            />
           </div>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <button type="submit" disabled={busy} className={`${btnPrimary} w-full justify-center disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={busy}
+          className={`${btnPrimary} w-full justify-center disabled:opacity-60`}
+        >
           {busy ? "Creating account…" : "Create account"}
         </button>
       </form>

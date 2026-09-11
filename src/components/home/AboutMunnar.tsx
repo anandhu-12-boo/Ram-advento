@@ -17,18 +17,21 @@ export function AboutMunnar() {
           </h2>
           <p className="mt-6 max-w-xl text-mist/75">
             Thirteen hundred metres above the sea, the high range is a country of tea, cloud and
-            forest. Ram Adventure was built by drivers born on these hills — the ones who know
-            which trail clears the mist first and where the elephants cross at dusk.
+            forest. Ram Adventure was built by drivers born on these hills — the ones who know which
+            trail clears the mist first and where the elephants cross at dusk.
           </p>
           <ul className="mt-7 grid gap-3 text-sm text-mist/80 sm:grid-cols-2">
-            {["Experienced drivers", "Local knowledge", "Adventure routes", "Customer-first service"].map(
-              (item) => (
-                <li key={item} className="flex items-center gap-3">
-                  <span className="h-1.5 w-1.5 rotate-45 bg-sand" aria-hidden />
-                  {item}
-                </li>
-              ),
-            )}
+            {[
+              "Experienced drivers",
+              "Local knowledge",
+              "Adventure routes",
+              "Customer-first service",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-3">
+                <span className="h-1.5 w-1.5 rotate-45 bg-sand" aria-hidden />
+                {item}
+              </li>
+            ))}
           </ul>
           <Link to="/about" className={`${btnGhost} mt-9`}>
             Our story

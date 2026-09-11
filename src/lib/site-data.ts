@@ -150,7 +150,11 @@ export const tours: Tour[] = [
     ],
     itinerary: [
       { time: "06:30", title: "Pickup", detail: "Hotel pickup anywhere in Munnar town." },
-      { time: "07:15", title: "Estate trails", detail: "Off-road climb through working tea estates." },
+      {
+        time: "07:15",
+        title: "Estate trails",
+        detail: "Off-road climb through working tea estates.",
+      },
       { time: "08:30", title: "Viewpoint break", detail: "Chai on a ridge above the mist line." },
       { time: "10:30", title: "Drop off", detail: "Return to your stay." },
     ],
@@ -159,8 +163,14 @@ export const tours: Tour[] = [
     pickup: "Free pickup within Munnar town limits. Outside pickups on request.",
     gallery: [gaproad, mattupetty, heroPoster, forestPoster],
     faqs: [
-      { q: "Is it safe for children?", a: "Yes. Trails are driven slowly and our jeeps are maintained weekly." },
-      { q: "What if it rains?", a: "Munnar rain is part of the experience. Severe weather means a free reschedule." },
+      {
+        q: "Is it safe for children?",
+        a: "Yes. Trails are driven slowly and our jeeps are maintained weekly.",
+      },
+      {
+        q: "What if it rains?",
+        a: "Munnar rain is part of the experience. Severe weather means a free reschedule.",
+      },
     ],
   },
   {
@@ -185,18 +195,33 @@ export const tours: Tour[] = [
     ],
     itinerary: [
       { time: "03:30", title: "Pickup", detail: "Early start from your Munnar stay." },
-      { time: "05:00", title: "Off-road ascent", detail: "The famous rocky climb to Kolukkumalai." },
+      {
+        time: "05:00",
+        title: "Off-road ascent",
+        detail: "The famous rocky climb to Kolukkumalai.",
+      },
       { time: "06:15", title: "Sunrise", detail: "Watch the range emerge from the clouds." },
       { time: "08:00", title: "Tea factory", detail: "Hand-rolled tea processing tour." },
       { time: "11:30", title: "Drop off", detail: "Back in Munnar by late morning." },
     ],
-    included: ["4x4 jeep with driver", "Sunrise point guidance", "Fuel and permits", "Bottled water"],
+    included: [
+      "4x4 jeep with driver",
+      "Sunrise point guidance",
+      "Fuel and permits",
+      "Bottled water",
+    ],
     excluded: ["Tea factory entry", "Breakfast", "Personal expenses"],
     pickup: "Pickup between 03:00 and 04:00 depending on your location.",
     gallery: [kolukkumalai, topstation, heroPoster, vattavada],
     faqs: [
-      { q: "How rough is the track?", a: "Genuinely rough — that is the adventure. Not advised for severe back or neck issues." },
-      { q: "Will we see the sunrise every day?", a: "Clear skies are most likely between December and March." },
+      {
+        q: "How rough is the track?",
+        a: "Genuinely rough — that is the adventure. Not advised for severe back or neck issues.",
+      },
+      {
+        q: "Will we see the sunrise every day?",
+        a: "Clear skies are most likely between December and March.",
+      },
     ],
   },
   {
@@ -231,7 +256,10 @@ export const tours: Tour[] = [
     pickup: "Free pickup within Munnar town limits.",
     gallery: [mattupetty, echopoint, valleyImage, topstation],
     faqs: [
-      { q: "Can we customise the stops?", a: "Yes — tell your driver in the morning and the route is adjusted." },
+      {
+        q: "Can we customise the stops?",
+        a: "Yes — tell your driver in the morning and the route is adjusted.",
+      },
       { q: "Is boating included?", a: "Boating tickets are paid directly at the lake." },
     ],
   },
@@ -256,8 +284,16 @@ export const tours: Tour[] = [
       "Photography timing planned around light",
     ],
     itinerary: [
-      { time: "Step 1", title: "Tell us your dates", detail: "Share your stay, dates and interests." },
-      { time: "Step 2", title: "We plan the route", detail: "A local driver-planner maps the trails." },
+      {
+        time: "Step 1",
+        title: "Tell us your dates",
+        detail: "Share your stay, dates and interests.",
+      },
+      {
+        time: "Step 2",
+        title: "We plan the route",
+        detail: "A local driver-planner maps the trails.",
+      },
       { time: "Step 3", title: "Confirm", detail: "Pay a small advance and your jeeps are held." },
     ],
     included: ["Route planning", "Jeeps and drivers", "Permits", "24/7 support line"],
@@ -265,8 +301,14 @@ export const tours: Tour[] = [
     pickup: "Anywhere in Munnar, Devikulam, Chinnakanal or Anachal.",
     gallery: [experienceJeep, kolukkumalai, anayirankal, forestPoster],
     faqs: [
-      { q: "Is there a minimum group size?", a: "No. We plan for couples and for groups of thirty." },
-      { q: "How is pricing decided?", a: "Based on distance, hours and number of jeeps. Quoted before you pay." },
+      {
+        q: "Is there a minimum group size?",
+        a: "No. We plan for couples and for groups of thirty.",
+      },
+      {
+        q: "How is pricing decided?",
+        a: "Based on distance, hours and number of jeeps. Quoted before you pay.",
+      },
     ],
   },
 ];
@@ -339,8 +381,18 @@ export const galleryItems = [
 ];
 
 export const vehicles = [
-  { id: "thar", name: "Mahindra Thar 4x4", seats: "Up to 6 guests", note: "Open-top trail specialist" },
-  { id: "bolero", name: "Mahindra Bolero", seats: "Up to 7 guests", note: "Comfort for full-day tours" },
+  {
+    id: "thar",
+    name: "Mahindra Thar 4x4",
+    seats: "Up to 6 guests",
+    note: "Open-top trail specialist",
+  },
+  {
+    id: "bolero",
+    name: "Mahindra Bolero",
+    seats: "Up to 7 guests",
+    note: "Comfort for full-day tours",
+  },
   { id: "convoy", name: "Jeep Convoy", seats: "8+ guests", note: "Multiple jeeps for groups" },
 ];
 

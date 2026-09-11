@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -102,7 +103,9 @@ function MyAccountPage() {
                     className="h-20 w-28 rounded-sm object-cover"
                   />
                   <div className="min-w-40 flex-1">
-                    <p className="text-[0.6rem] tracking-[0.2em] text-sand uppercase">{b.booking_id}</p>
+                    <p className="text-[0.6rem] tracking-[0.2em] text-sand uppercase">
+                      {b.booking_id}
+                    </p>
                     <p className="font-display text-2xl text-mist">{b.tours?.title}</p>
                     <p className="text-sm text-mist/60">
                       {b.booking_date} · {b.time_slot} · {b.guests} guests

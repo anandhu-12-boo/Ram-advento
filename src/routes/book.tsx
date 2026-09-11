@@ -128,7 +128,8 @@ function BookPage() {
 
   const canContinue = () => {
     if (step === 0) return Boolean(date);
-    if (step === 4) return name.trim().length > 1 && phone.trim().length > 6 && /.+@.+\..+/.test(email);
+    if (step === 4)
+      return name.trim().length > 1 && phone.trim().length > 6 && /.+@.+\..+/.test(email);
     return true;
   };
 
@@ -164,7 +165,9 @@ function BookPage() {
           <div className="flex justify-center">
             <BrandLogo size={92} interactive />
           </div>
-          <h1 className="mt-6 font-display text-[clamp(2.2rem,6vw,4rem)] text-mist">Your adventure</h1>
+          <h1 className="mt-6 font-display text-[clamp(2.2rem,6vw,4rem)] text-mist">
+            Your adventure
+          </h1>
           <p className="eyebrow mt-2">Six steps to the trail</p>
         </div>
 
@@ -213,8 +216,15 @@ function BookPage() {
               {step === 0 && (
                 <div className="space-y-6">
                   <div>
-                    <label className={label} htmlFor="tour">Adventure</label>
-                    <select id="tour" className={field} value={tourId} onChange={(e) => setTourId(e.target.value)}>
+                    <label className={label} htmlFor="tour">
+                      Adventure
+                    </label>
+                    <select
+                      id="tour"
+                      className={field}
+                      value={tourId}
+                      onChange={(e) => setTourId(e.target.value)}
+                    >
                       {tours.map((t) => (
                         <option key={t.slug} value={t.slug} className="bg-ink">
                           {t.name} — {t.duration}
@@ -224,12 +234,28 @@ function BookPage() {
                   </div>
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
-                      <label className={label} htmlFor="date">Select date</label>
-                      <input id="date" type="date" className={field} value={date} onChange={(e) => setDate(e.target.value)} />
+                      <label className={label} htmlFor="date">
+                        Select date
+                      </label>
+                      <input
+                        id="date"
+                        type="date"
+                        className={field}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
                     </div>
                     <div>
-                      <label className={label} htmlFor="time">Start time</label>
-                      <input id="time" type="time" className={field} value={time} onChange={(e) => setTime(e.target.value)} />
+                      <label className={label} htmlFor="time">
+                        Start time
+                      </label>
+                      <input
+                        id="time"
+                        type="time"
+                        className={field}
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -270,7 +296,9 @@ function BookPage() {
                       onClick={() => setVehicle(v.id)}
                       className={cn(
                         "rounded-sm border p-5 text-left transition-colors",
-                        vehicle === v.id ? "border-sand bg-sand/10" : "border-white/15 hover:border-sand/60",
+                        vehicle === v.id
+                          ? "border-sand bg-sand/10"
+                          : "border-white/15 hover:border-sand/60",
                       )}
                     >
                       <p className="font-display text-xl text-mist">{v.name}</p>
@@ -290,7 +318,9 @@ function BookPage() {
                       onClick={() => setPickup(p)}
                       className={cn(
                         "rounded-sm border px-4 py-3 text-left text-sm transition-colors",
-                        pickup === p ? "border-sand bg-sand/10 text-mist" : "border-white/15 text-mist/75 hover:border-sand/60",
+                        pickup === p
+                          ? "border-sand bg-sand/10 text-mist"
+                          : "border-white/15 text-mist/75 hover:border-sand/60",
                       )}
                     >
                       {p}
@@ -302,16 +332,41 @@ function BookPage() {
               {step === 4 && (
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className={label} htmlFor="cname">Full name</label>
-                    <input id="cname" className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Anand A" />
+                    <label className={label} htmlFor="cname">
+                      Full name
+                    </label>
+                    <input
+                      id="cname"
+                      className={field}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Anand A"
+                    />
                   </div>
                   <div>
-                    <label className={label} htmlFor="cphone">Phone / WhatsApp</label>
-                    <input id="cphone" className={field} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 …" />
+                    <label className={label} htmlFor="cphone">
+                      Phone / WhatsApp
+                    </label>
+                    <input
+                      id="cphone"
+                      className={field}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 …"
+                    />
                   </div>
                   <div>
-                    <label className={label} htmlFor="cemail">Email</label>
-                    <input id="cemail" type="email" className={field} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+                    <label className={label} htmlFor="cemail">
+                      Email
+                    </label>
+                    <input
+                      id="cemail"
+                      type="email"
+                      className={field}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@email.com"
+                    />
                   </div>
                 </div>
               )}
@@ -349,8 +404,8 @@ function BookPage() {
                     </p>
                   )}
                   <p className="mt-2 text-xs text-mist/55">
-                    Payment is collected on pickup. Online card/UPI payment can be switched on once a
-                    payment provider is connected.
+                    Payment is collected on pickup. Online card/UPI payment can be switched on once
+                    a payment provider is connected.
                   </p>
                   {!authLoading && !session && (
                     <p className="mt-3 text-xs text-mist/70">
@@ -377,7 +432,8 @@ function BookPage() {
 
             {step < steps.length - 1 ? (
               <button type="button" onClick={next} className={btnPrimary}>
-                Continue <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                Continue{" "}
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
               </button>
             ) : (
               <button

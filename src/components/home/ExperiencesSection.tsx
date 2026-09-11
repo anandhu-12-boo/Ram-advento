@@ -16,7 +16,10 @@ export function ExperiencesSection() {
         height={900}
         className="absolute inset-0 h-full w-full object-cover opacity-20"
       />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink via-forest-deep/85 to-ink" />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-b from-ink via-forest-deep/85 to-ink"
+      />
 
       <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>

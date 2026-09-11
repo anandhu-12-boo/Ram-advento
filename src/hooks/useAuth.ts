@@ -48,9 +48,6 @@ export function useAuth() {
     loading: loading || (Boolean(session) && account.isLoading),
     profile: account.data?.profile ?? null,
     isAdmin: account.data?.isAdmin ?? false,
-    displayName:
-      account.data?.profile?.name ||
-      session?.user.email?.split("@")[0] ||
-      "Traveller",
+    displayName: account.data?.profile?.name || session?.user.email?.split("@")[0] || "Traveller",
   };
 }

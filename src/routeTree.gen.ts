@@ -21,9 +21,19 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SafariRouteImport } from './routes/safari'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAvailabilityRouteImport } from './routes/admin.availability'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminToursRouteImport } from './routes/admin.tours'
 import { Route as ToursIndexRouteImport } from './routes/tours.index'
 import { Route as ToursSlugRouteImport } from './routes/tours.$slug'
 import { Route as AuthenticatedMyAccountIndexRouteImport } from './routes/_authenticated/my-account.index'
+import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 import { Route as AuthenticatedMyAccountBookingsIndexRouteImport } from './routes/_authenticated/my-account.bookings.index'
 import { Route as AuthenticatedMyAccountBookingsBookingIdRouteImport } from './routes/_authenticated/my-account.bookings.$bookingId'
 
@@ -86,6 +96,46 @@ const SafariRoute = SafariRouteImport.update({
   path: '/safari',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAvailabilityRoute = AdminAvailabilityRouteImport.update({
+  id: '/admin/availability',
+  path: '/admin/availability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/admin/customers',
+  path: '/admin/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
+  id: '/admin/enquiries',
+  path: '/admin/enquiries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRevenueRoute = AdminRevenueRouteImport.update({
+  id: '/admin/revenue',
+  path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminToursRoute = AdminToursRouteImport.update({
+  id: '/admin/tours',
+  path: '/admin/tours',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToursIndexRoute = ToursIndexRouteImport.update({
   id: '/tours/',
   path: '/tours/',
@@ -102,6 +152,16 @@ const AuthenticatedMyAccountIndexRoute =
     path: '/my-account/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
+  id: '/admin/bookings/',
+  path: '/admin/bookings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/admin/bookings/$bookingId',
+  path: '/admin/bookings/$bookingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMyAccountBookingsIndexRoute =
   AuthenticatedMyAccountBookingsIndexRouteImport.update({
     id: '/my-account/bookings/',
@@ -127,9 +187,19 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
+  '/admin/availability': typeof AdminAvailabilityRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/tours': typeof AdminToursRoute
   '/tours/$slug': typeof ToursSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/tours/': typeof ToursIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/my-account/': typeof AuthenticatedMyAccountIndexRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
   '/my-account/bookings/': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
@@ -145,9 +215,19 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
+  '/admin/availability': typeof AdminAvailabilityRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/tours': typeof AdminToursRoute
   '/tours/$slug': typeof ToursSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/tours': typeof ToursIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/my-account': typeof AuthenticatedMyAccountIndexRoute
+  '/admin/bookings': typeof AdminBookingsIndexRoute
   '/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
   '/my-account/bookings': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
@@ -165,9 +245,19 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safari': typeof SafariRoute
+  '/admin/availability': typeof AdminAvailabilityRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/tours': typeof AdminToursRoute
   '/tours/$slug': typeof ToursSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/tours/': typeof ToursIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/_authenticated/my-account/': typeof AuthenticatedMyAccountIndexRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/_authenticated/my-account/bookings/$bookingId': typeof AuthenticatedMyAccountBookingsBookingIdRoute
   '/_authenticated/my-account/bookings/': typeof AuthenticatedMyAccountBookingsIndexRoute
 }
@@ -185,9 +275,19 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/safari'
+    | '/admin/availability'
+    | '/admin/customers'
+    | '/admin/enquiries'
+    | '/admin/login'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/tours'
     | '/tours/$slug'
+    | '/admin/'
     | '/tours/'
+    | '/admin/bookings/$bookingId'
     | '/my-account/'
+    | '/admin/bookings/'
     | '/my-account/bookings/$bookingId'
     | '/my-account/bookings/'
   fileRoutesByTo: FileRoutesByTo
@@ -203,9 +303,19 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/safari'
+    | '/admin/availability'
+    | '/admin/customers'
+    | '/admin/enquiries'
+    | '/admin/login'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/tours'
     | '/tours/$slug'
+    | '/admin'
     | '/tours'
+    | '/admin/bookings/$bookingId'
     | '/my-account'
+    | '/admin/bookings'
     | '/my-account/bookings/$bookingId'
     | '/my-account/bookings'
   id:
@@ -222,9 +332,19 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/safari'
+    | '/admin/availability'
+    | '/admin/customers'
+    | '/admin/enquiries'
+    | '/admin/login'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/tours'
     | '/tours/$slug'
+    | '/admin/'
     | '/tours/'
+    | '/admin/bookings/$bookingId'
     | '/_authenticated/my-account/'
+    | '/admin/bookings/'
     | '/_authenticated/my-account/bookings/$bookingId'
     | '/_authenticated/my-account/bookings/'
   fileRoutesById: FileRoutesById
@@ -242,8 +362,18 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SafariRoute: typeof SafariRoute
+  AdminAvailabilityRoute: typeof AdminAvailabilityRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminEnquiriesRoute: typeof AdminEnquiriesRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminToursRoute: typeof AdminToursRoute
   ToursSlugRoute: typeof ToursSlugRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ToursIndexRoute: typeof ToursIndexRoute
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
+  AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +462,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SafariRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/availability': {
+      id: '/admin/availability'
+      path: '/admin/availability'
+      fullPath: '/admin/availability'
+      preLoaderRoute: typeof AdminAvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/admin/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/enquiries': {
+      id: '/admin/enquiries'
+      path: '/admin/enquiries'
+      fullPath: '/admin/enquiries'
+      preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/revenue': {
+      id: '/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tours': {
+      id: '/admin/tours'
+      path: '/admin/tours'
+      fullPath: '/admin/tours'
+      preLoaderRoute: typeof AdminToursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tours/': {
       id: '/tours/'
       path: '/tours'
@@ -352,6 +538,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/my-account/'
       preLoaderRoute: typeof AuthenticatedMyAccountIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/admin/bookings/': {
+      id: '/admin/bookings/'
+      path: '/admin/bookings'
+      fullPath: '/admin/bookings/'
+      preLoaderRoute: typeof AdminBookingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/admin/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/my-account/bookings/': {
       id: '/_authenticated/my-account/bookings/'
@@ -400,8 +600,18 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SafariRoute: SafariRoute,
+  AdminAvailabilityRoute: AdminAvailabilityRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminEnquiriesRoute: AdminEnquiriesRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminRevenueRoute: AdminRevenueRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
+  AdminToursRoute: AdminToursRoute,
   ToursSlugRoute: ToursSlugRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ToursIndexRoute: ToursIndexRoute,
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
+  AdminBookingsIndexRoute: AdminBookingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

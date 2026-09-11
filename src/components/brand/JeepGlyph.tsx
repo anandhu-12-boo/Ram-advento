@@ -25,7 +25,13 @@ export function JeepGlyph({ className, size = 28 }: Props) {
 
 export function MountainGlyph({ className, size = 28 }: Props) {
   return (
-    <svg viewBox="0 0 64 40" width={size} height={(size * 40) / 64} className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 64 40"
+      width={size}
+      height={(size * 40) / 64}
+      className={className}
+      aria-hidden="true"
+    >
       <path
         d="M2 38 20 8l10 15 7-9 25 24z"
         fill="none"

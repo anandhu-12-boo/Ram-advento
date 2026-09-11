@@ -105,7 +105,11 @@ function LoginPage() {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <button type="submit" disabled={busy} className={`${btnPrimary} w-full justify-center disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={busy}
+          className={`${btnPrimary} w-full justify-center disabled:opacity-60`}
+        >
           {busy ? "Signing in…" : "Login"}
         </button>
 
@@ -113,7 +117,10 @@ function LoginPage() {
           <Link to="/register" className="tracking-[0.16em] text-mist/60 uppercase hover:text-sand">
             Register
           </Link>
-          <Link to="/forgot-password" className="tracking-[0.16em] text-mist/60 uppercase hover:text-sand">
+          <Link
+            to="/forgot-password"
+            className="tracking-[0.16em] text-mist/60 uppercase hover:text-sand"
+          >
             Forgot password
           </Link>
         </div>

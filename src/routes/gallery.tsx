@@ -39,11 +39,7 @@ function GalleryPage() {
 
   return (
     <SiteShell>
-      <PageHero
-        eyebrow="Gallery"
-        title="The high range, frame by frame"
-        image={forestPoster}
-      />
+      <PageHero eyebrow="Gallery" title="The high range, frame by frame" image={forestPoster} />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="flex flex-wrap gap-2">

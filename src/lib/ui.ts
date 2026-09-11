@@ -8,4 +8,8 @@ export const btnSmall =
   "inline-flex items-center justify-center gap-1.5 rounded-sm border border-sand/40 px-4 py-2 text-[0.68rem] font-bold tracking-[0.16em] text-sand uppercase transition-colors hover:bg-sand hover:text-forest-deep";
 
 export const inr = (n: number) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(n);

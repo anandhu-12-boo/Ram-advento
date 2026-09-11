@@ -52,7 +52,10 @@ function TourDetail() {
           height={900}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/30" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/30"
+        />
         <div className="relative mx-auto w-full max-w-7xl px-6 pb-14">
           <p className="eyebrow">{tour.location}</p>
           <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.4rem,7vw,5.4rem)] text-mist">
@@ -61,11 +64,26 @@ function TourDetail() {
           <p className="mt-3 max-w-xl text-mist/75">{tour.tagline}</p>
 
           <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-3 text-[0.7rem] font-semibold tracking-[0.16em] text-mist/70 uppercase">
-            <li className="flex items-center gap-2"><Clock size={14} className="text-sand" />{tour.duration}</li>
-            <li className="flex items-center gap-2"><Truck size={14} className="text-sand" />{tour.vehicle}</li>
-            <li className="flex items-center gap-2"><Users size={14} className="text-sand" />Max {tour.maxGuests}</li>
-            <li className="flex items-center gap-2"><Star size={14} className="text-sand" />{tour.rating} ({tour.reviews})</li>
-            <li className="flex items-center gap-2"><MapPin size={14} className="text-sand" />{tour.location}</li>
+            <li className="flex items-center gap-2">
+              <Clock size={14} className="text-sand" />
+              {tour.duration}
+            </li>
+            <li className="flex items-center gap-2">
+              <Truck size={14} className="text-sand" />
+              {tour.vehicle}
+            </li>
+            <li className="flex items-center gap-2">
+              <Users size={14} className="text-sand" />
+              Max {tour.maxGuests}
+            </li>
+            <li className="flex items-center gap-2">
+              <Star size={14} className="text-sand" />
+              {tour.rating} ({tour.reviews})
+            </li>
+            <li className="flex items-center gap-2">
+              <MapPin size={14} className="text-sand" />
+              {tour.location}
+            </li>
           </ul>
 
           <div className="mt-8 flex flex-wrap items-center gap-5">

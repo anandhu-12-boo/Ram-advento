@@ -24,11 +24,31 @@ export function Footer() {
         <div>
           <p className="eyebrow">Explore</p>
           <ul className="mt-4 space-y-2 text-sm text-mist/75">
-            <li><Link to="/safari" className="hover:text-sand">Jeep Safari</Link></li>
-            <li><Link to="/tours" className="hover:text-sand">Tour Packages</Link></li>
-            <li><Link to="/gallery" className="hover:text-sand">Gallery</Link></li>
-            <li><Link to="/about" className="hover:text-sand">About Us</Link></li>
-            <li><Link to="/book" className="hover:text-sand">Book Now</Link></li>
+            <li>
+              <Link to="/safari" className="hover:text-sand">
+                Jeep Safari
+              </Link>
+            </li>
+            <li>
+              <Link to="/tours" className="hover:text-sand">
+                Tour Packages
+              </Link>
+            </li>
+            <li>
+              <Link to="/gallery" className="hover:text-sand">
+                Gallery
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-sand">
+                About Us
+              </Link>
+            </li>
+            <li>
+              <Link to="/book" className="hover:text-sand">
+                Book Now
+              </Link>
+            </li>
           </ul>
         </div>
 

@@ -5,8 +5,7 @@ import { SiteShell } from "@/components/SiteShell";
 
 export const authField =
   "mt-2 w-full rounded-sm border border-white/15 bg-ink/60 px-4 py-3 text-sm text-mist outline-none transition-colors placeholder:text-mist/35 focus:border-sand";
-export const authLabel =
-  "text-[0.66rem] font-semibold tracking-[0.2em] text-mist/60 uppercase";
+export const authLabel = "text-[0.66rem] font-semibold tracking-[0.2em] text-mist/60 uppercase";
 
 export function AuthCard({
   title,
@@ -36,7 +35,10 @@ export function AuthCard({
 
         {footer ? <div className="mt-6 text-center text-sm text-mist/70">{footer}</div> : null}
 
-        <Link to="/" className="mt-8 text-center text-xs tracking-[0.2em] text-mist/45 uppercase hover:text-sand">
+        <Link
+          to="/"
+          className="mt-8 text-center text-xs tracking-[0.2em] text-mist/45 uppercase hover:text-sand"
+        >
           Back to site
         </Link>
       </section>
