@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { heroPoster, heroVideo } from "@/lib/media";
 import { btnGhost, btnPrimary } from "@/lib/ui";
 
 export function HeroSection({ ready }: { ready: boolean }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
+  const [videoFailed, setVideoFailed] = useState(false);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1, 1.08]);
   const contentY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -120]);
@@ -27,17 +28,27 @@ export function HeroSection({ ready }: { ready: boolean }) {
         animate={ready ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1.4, ease: "easeOut" }}
       >
-        <video
-          className="h-full w-full object-cover object-[60%_center] sm:object-center"
-          src={heroVideo}
-          poster={heroPoster}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-        />
+        {videoFailed ? (
+          <img
+            className="h-full w-full object-cover object-[60%_center] sm:object-center"
+            src={heroPoster}
+            alt=""
+            aria-hidden="true"
+          />
+        ) : (
+          <video
+            className="h-full w-full object-cover object-[60%_center] sm:object-center"
+            src={heroVideo}
+            poster={heroPoster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            onError={() => setVideoFailed(true)}
+          />
+        )}
       </motion.div>
 
       <motion.div

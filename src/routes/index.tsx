@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { IntroLoader, hasPlayedIntro } from "@/components/IntroLoader";
+import { useState } from "react";
+import { IntroLoader } from "@/components/IntroLoader";
 import { SiteShell } from "@/components/SiteShell";
 import { AboutMunnar } from "@/components/home/AboutMunnar";
 import { ExperiencesSection } from "@/components/home/ExperiencesSection";
@@ -49,16 +49,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  // The intro is rendered in the server markup too, so it covers the screen from
+  // the very first paint on every load and never depends on hydration timing.
   const [ready, setReady] = useState(true);
-  const [showIntro, setShowIntro] = useState(false);
-
-  useEffect(() => {
-    if (!hasPlayedIntro()) setShowIntro(true);
-  }, []);
 
   return (
     <>
-      {showIntro && <IntroLoader onDone={() => setReady(true)} />}
+      <IntroLoader onDone={() => setReady(true)} />
       <SiteShell>
         <HeroSection ready={ready} />
         <AboutMunnar />
