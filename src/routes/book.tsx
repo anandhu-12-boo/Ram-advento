@@ -1,8 +1,14 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
+import { useAuth } from "@/hooks/useAuth";
+import { createMyBooking } from "@/lib/account.functions";
+import { getSlotAvailability } from "@/lib/tours.functions";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph } from "@/components/brand/JeepGlyph";
 import { SiteShell } from "@/components/SiteShell";
