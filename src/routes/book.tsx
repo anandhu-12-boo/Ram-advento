@@ -142,20 +142,19 @@ function BookPage() {
   };
 
   const confirm = () => {
-    const bookingId = `RA${Date.now().toString().slice(-6)}`;
-    navigate({
-      to: "/booking-confirmed",
-      search: {
-        id: bookingId,
-        tour: tour.slug,
-        date,
-        time,
-        guests,
-        vehicle,
-        pickup,
-        amount,
-      },
-    });
+    setError(null);
+    if (!session) {
+      navigate({
+        to: "/login",
+        search: { redirect: `/book?tour=${tour.slug}` },
+      });
+      return;
+    }
+    if (slotFull) {
+      setError("That time slot is full. Please choose another time or date.");
+      return;
+    }
+    booking.mutate();
   };
 
   return (
