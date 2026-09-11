@@ -1,8 +1,14 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
+import { useAuth } from "@/hooks/useAuth";
+import { createMyBooking } from "@/lib/account.functions";
+import { getSlotAvailability } from "@/lib/tours.functions";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph } from "@/components/brand/JeepGlyph";
 import { SiteShell } from "@/components/SiteShell";
@@ -59,8 +65,66 @@ function BookPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const { session, profile, user, loading: authLoading } = useAuth();
+  const submitBooking = useServerFn(createMyBooking);
+  const fetchAvailability = useServerFn(getSlotAvailability);
+
   const tour = useMemo(() => tours.find((t) => t.slug === tourId) ?? tours[0]!, [tourId]);
   const amount = tour.price ? tour.price + Math.max(0, guests - 4) * 400 : 0;
+
+  // Prefill the contact step from the signed-in account.
+  useEffect(() => {
+    if (profile?.name) setName((v) => v || profile.name);
+    if (profile?.phone) setPhone((v) => v || profile.phone);
+    if (user?.email) setEmail((v) => v || user.email!);
+  }, [profile?.name, profile?.phone, user?.email]);
+
+  // Live slot availability for the chosen adventure + date (public data).
+  const availability = useQuery({
+    queryKey: ["availability", tourId, date],
+    queryFn: () => fetchAvailability({ data: { slug: tourId, date } }),
+    enabled: Boolean(date),
+  });
+
+  const slot = (availability.data ?? []).find((s) => s.time_slot.slice(0, 5) === time.slice(0, 5));
+  const slotFull = Boolean(slot && (slot.status !== "open" || slot.available_slots < guests));
+
+  const booking = useMutation({
+    mutationFn: () =>
+      submitBooking({
+        data: {
+          slug: tour.slug,
+          date,
+          time,
+          guests,
+          vehicle: vehicles.find((v) => v.id === vehicle)?.name ?? vehicle,
+          pickup,
+          name,
+          phone,
+        },
+      }),
+    onSuccess: (result) => {
+      if (!result) {
+        setError("Booking could not be created. Please try again.");
+        return;
+      }
+      toast.success("Booking received — we'll confirm it shortly.");
+      navigate({
+        to: "/booking-confirmed",
+        search: {
+          id: result.booking_id,
+          tour: tour.slug,
+          date,
+          time,
+          guests,
+          vehicle,
+          pickup,
+          amount: Number(result.total_amount ?? amount),
+        },
+      });
+    },
+    onError: (err: Error) => setError(err.message),
+  });
 
   const canContinue = () => {
     if (step === 0) return Boolean(date);
@@ -78,20 +142,19 @@ function BookPage() {
   };
 
   const confirm = () => {
-    const bookingId = `RA${Date.now().toString().slice(-6)}`;
-    navigate({
-      to: "/booking-confirmed",
-      search: {
-        id: bookingId,
-        tour: tour.slug,
-        date,
-        time,
-        guests,
-        vehicle,
-        pickup,
-        amount,
-      },
-    });
+    setError(null);
+    if (!session) {
+      navigate({
+        to: "/login",
+        search: { redirect: `/book?tour=${tour.slug}` },
+      });
+      return;
+    }
+    if (slotFull) {
+      setError("That time slot is full. Please choose another time or date.");
+      return;
+    }
+    booking.mutate();
   };
 
   return (
@@ -278,10 +341,23 @@ function BookPage() {
                       </dd>
                     </div>
                   </dl>
+                  {slot && (
+                    <p className="mt-3 text-xs text-sand/80">
+                      {slotFull
+                        ? "This time slot is full — pick another time or date."
+                        : `${slot.available_slots} seat${slot.available_slots === 1 ? "" : "s"} left at ${time} on ${date}.`}
+                    </p>
+                  )}
                   <p className="mt-2 text-xs text-mist/55">
-                    Payment is collected on confirmation. Online card/UPI payment can be switched on
-                    once a payment provider is connected.
+                    Payment is collected on pickup. Online card/UPI payment can be switched on once a
+                    payment provider is connected.
                   </p>
+                  {!authLoading && !session && (
+                    <p className="mt-3 text-xs text-mist/70">
+                      You'll be asked to sign in — your booking is saved to your account so you can
+                      track its status.
+                    </p>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -304,8 +380,25 @@ function BookPage() {
                 Continue <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
               </button>
             ) : (
-              <button type="button" onClick={confirm} className={btnPrimary}>
-                Confirm adventure <Check size={15} />
+              <button
+                type="button"
+                onClick={confirm}
+                disabled={booking.isPending}
+                className={cn(btnPrimary, "disabled:opacity-60")}
+              >
+                {booking.isPending ? (
+                  <>
+                    Confirming <Loader2 size={15} className="animate-spin" />
+                  </>
+                ) : session ? (
+                  <>
+                    Confirm adventure <Check size={15} />
+                  </>
+                ) : (
+                  <>
+                    Sign in to confirm <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             )}
           </div>

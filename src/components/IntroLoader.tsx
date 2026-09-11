@@ -2,29 +2,81 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
+import { brandLogo, heroPoster, heroVideo } from "@/lib/media";
 
-const SESSION_KEY = "ram-adventure-intro-played";
+const MIN_DURATION = 2000;
+const MAX_DURATION = 4500;
+
+/** Preload the critical homepage assets, resolving on error too so we never stall. */
+function preloadAssets(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+
+  const image = (src: string) =>
+    new Promise<void>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+      img.src = src;
+    });
+
+  const video = (src: string) =>
+    new Promise<void>((resolve) => {
+      try {
+        const el = document.createElement("video");
+        el.preload = "metadata";
+        el.muted = true;
+        el.onloadedmetadata = () => resolve();
+        el.onerror = () => resolve();
+        el.src = src;
+      } catch {
+        resolve();
+      }
+    });
+
+  return Promise.all([image(brandLogo), image(heroPoster), video(heroVideo)]).then(() => undefined);
+}
 
 /**
- * Cinematic intro: black screen -> logo scale-in + light sweep -> mountain +
- * animated road with travelling jeep -> logo lifts toward the navbar.
+ * Cinematic intro: dark forest screen -> logo scale-in + light sweep -> "Preparing your
+ * adventure" -> jeep driving along a road line -> logo lifts toward the navbar.
+ *
+ * The inner animations are CSS keyframes so they run from the very first paint, before
+ * React hydrates. Framer Motion only drives the exit. It always finishes within
+ * MAX_DURATION, even if an asset fails to load.
  */
 export function IntroLoader({ onDone }: { onDone: () => void }) {
   const reduce = useReducedMotion();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const duration = reduce ? 500 : 2300;
-    const timer = window.setTimeout(() => {
+    let finished = false;
+    const start = Date.now();
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
       setVisible(false);
-      try {
-        sessionStorage.setItem(SESSION_KEY, "1");
-      } catch {
-        /* ignore */
-      }
       onDone();
-    }, duration);
-    return () => window.clearTimeout(timer);
+    };
+
+    if (reduce) {
+      const quick = window.setTimeout(finish, 600);
+      return () => window.clearTimeout(quick);
+    }
+
+    // Hard safety net: never leave the visitor stuck on the loading screen.
+    const failsafe = window.setTimeout(finish, MAX_DURATION);
+    let minTimer: number | undefined;
+
+    void preloadAssets().then(() => {
+      const remaining = Math.max(0, MIN_DURATION - (Date.now() - start));
+      minTimer = window.setTimeout(finish, remaining);
+    });
+
+    return () => {
+      window.clearTimeout(failsafe);
+      if (minTimer) window.clearTimeout(minTimer);
+    };
   }, [onDone, reduce]);
 
   return (
@@ -32,7 +84,7 @@ export function IntroLoader({ onDone }: { onDone: () => void }) {
       {visible && (
         <motion.div
           key="intro"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-ink"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-ink"
           style={{
             background:
               "radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--forest-deep) 90%, black), var(--ink) 70%)",
@@ -40,86 +92,44 @@ export function IntroLoader({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
+          role="status"
           aria-live="polite"
           aria-label="Preparing your adventure"
         >
           <motion.div
-            className="relative"
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={reduce ? { opacity: 0 } : { scale: 0.22, y: "-38vh", opacity: 0 }}
+            className="intro-logo relative"
+            exit={reduce ? { opacity: 0 } : { scale: 0.8, y: "-38vh", opacity: 0 }}
             transition={{ duration: reduce ? 0.3 : 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
             <BrandLogo size={168} priority />
-            {!reduce && (
-              <motion.span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-full"
-                style={{
-                  background:
-                    "linear-gradient(105deg, transparent 35%, color-mix(in oklab, white 65%, transparent) 50%, transparent 65%)",
-                  mixBlendMode: "screen",
-                }}
-                initial={{ x: "-120%" }}
-                animate={{ x: "120%" }}
-                transition={{ duration: 1.1, delay: 0.5, ease: "easeInOut" }}
-              />
-            )}
+            <span
+              aria-hidden
+              className="intro-sweep pointer-events-none absolute inset-0 rounded-full"
+              style={{
+                background:
+                  "linear-gradient(105deg, transparent 35%, color-mix(in oklab, white 65%, transparent) 50%, transparent 65%)",
+                mixBlendMode: "screen",
+              }}
+            />
           </motion.div>
 
-          {!reduce && (
-            <motion.div
-              className="mt-10 w-[min(300px,70vw)]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.45 }}
-            >
-              <motion.div
-                className="flex justify-center text-mountain"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <MountainGlyph size={56} />
-              </motion.div>
+          <p className="eyebrow intro-rise mt-8">Preparing your adventure</p>
 
-              <div className="relative mt-3 h-6">
-                <motion.span
-                  className="absolute top-4 left-0 h-px bg-sand/50"
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
-                  transition={{ delay: 0.75, duration: 0.7, ease: "easeOut" }}
-                />
-                <motion.span
-                  className="absolute top-0 text-sand"
-                  initial={{ x: 0, opacity: 0 }}
-                  animate={{ x: "calc(100% - 30px)", opacity: 1 }}
-                  transition={{ delay: 1.05, duration: 1, ease: "easeInOut" }}
-                >
-                  <JeepGlyph size={30} />
-                </motion.span>
-              </div>
-            </motion.div>
-          )}
+          <div className="intro-rise mt-8 w-[min(300px,70vw)]">
+            <div className="flex justify-center text-mountain">
+              <MountainGlyph size={48} />
+            </div>
 
-          <motion.p
-            className="eyebrow mt-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: reduce ? 0.1 : 1.5, duration: 0.5 }}
-          >
-            Preparing your adventure
-          </motion.p>
+            <div className="relative mt-3 h-8" aria-hidden>
+              <span className="absolute top-5 left-0 h-px w-full bg-sand/25" />
+              <span className="intro-road absolute top-5 left-0 h-px bg-sand" />
+              <span className="intro-jeep absolute top-0 left-0 text-sand">
+                <JeepGlyph size={30} />
+              </span>
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
   );
-}
-
-export function hasPlayedIntro() {
-  try {
-    return sessionStorage.getItem(SESSION_KEY) === "1";
-  } catch {
-    return false;
-  }
 }
