@@ -341,10 +341,23 @@ function BookPage() {
                       </dd>
                     </div>
                   </dl>
+                  {slot && (
+                    <p className="mt-3 text-xs text-sand/80">
+                      {slotFull
+                        ? "This time slot is full — pick another time or date."
+                        : `${slot.available_slots} seat${slot.available_slots === 1 ? "" : "s"} left at ${time} on ${date}.`}
+                    </p>
+                  )}
                   <p className="mt-2 text-xs text-mist/55">
-                    Payment is collected on confirmation. Online card/UPI payment can be switched on
-                    once a payment provider is connected.
+                    Payment is collected on pickup. Online card/UPI payment can be switched on once a
+                    payment provider is connected.
                   </p>
+                  {!authLoading && !session && (
+                    <p className="mt-3 text-xs text-mist/70">
+                      You'll be asked to sign in — your booking is saved to your account so you can
+                      track its status.
+                    </p>
+                  )}
                 </div>
               )}
             </motion.div>
