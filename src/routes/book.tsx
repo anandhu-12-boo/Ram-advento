@@ -65,8 +65,66 @@ function BookPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const { session, profile, user, loading: authLoading } = useAuth();
+  const submitBooking = useServerFn(createMyBooking);
+  const fetchAvailability = useServerFn(getSlotAvailability);
+
   const tour = useMemo(() => tours.find((t) => t.slug === tourId) ?? tours[0]!, [tourId]);
   const amount = tour.price ? tour.price + Math.max(0, guests - 4) * 400 : 0;
+
+  // Prefill the contact step from the signed-in account.
+  useEffect(() => {
+    if (profile?.name) setName((v) => v || profile.name);
+    if (profile?.phone) setPhone((v) => v || profile.phone);
+    if (user?.email) setEmail((v) => v || user.email!);
+  }, [profile?.name, profile?.phone, user?.email]);
+
+  // Live slot availability for the chosen adventure + date (public data).
+  const availability = useQuery({
+    queryKey: ["availability", tourId, date],
+    queryFn: () => fetchAvailability({ data: { slug: tourId, date } }),
+    enabled: Boolean(date),
+  });
+
+  const slot = (availability.data ?? []).find((s) => s.time_slot.slice(0, 5) === time.slice(0, 5));
+  const slotFull = Boolean(slot && (slot.status !== "open" || slot.available_slots < guests));
+
+  const booking = useMutation({
+    mutationFn: () =>
+      submitBooking({
+        data: {
+          slug: tour.slug,
+          date,
+          time,
+          guests,
+          vehicle: vehicles.find((v) => v.id === vehicle)?.name ?? vehicle,
+          pickup,
+          name,
+          phone,
+        },
+      }),
+    onSuccess: (result) => {
+      if (!result) {
+        setError("Booking could not be created. Please try again.");
+        return;
+      }
+      toast.success("Booking received — we'll confirm it shortly.");
+      navigate({
+        to: "/booking-confirmed",
+        search: {
+          id: result.booking_id,
+          tour: tour.slug,
+          date,
+          time,
+          guests,
+          vehicle,
+          pickup,
+          amount: Number(result.total_amount ?? amount),
+        },
+      });
+    },
+    onError: (err: Error) => setError(err.message),
+  });
 
   const canContinue = () => {
     if (step === 0) return Boolean(date);
