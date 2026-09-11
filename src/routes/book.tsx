@@ -380,8 +380,25 @@ function BookPage() {
                 Continue <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
               </button>
             ) : (
-              <button type="button" onClick={confirm} className={btnPrimary}>
-                Confirm adventure <Check size={15} />
+              <button
+                type="button"
+                onClick={confirm}
+                disabled={booking.isPending}
+                className={cn(btnPrimary, "disabled:opacity-60")}
+              >
+                {booking.isPending ? (
+                  <>
+                    Confirming <Loader2 size={15} className="animate-spin" />
+                  </>
+                ) : session ? (
+                  <>
+                    Confirm adventure <Check size={15} />
+                  </>
+                ) : (
+                  <>
+                    Sign in to confirm <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             )}
           </div>
