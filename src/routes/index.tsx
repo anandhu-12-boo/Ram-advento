@@ -49,9 +49,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  // The intro is rendered in the server markup too, so it covers the screen from
-  // the very first paint on every load and never depends on hydration timing.
-  const [ready, setReady] = useState(true);
+  // Keep the homepage hidden until the intro loader completes so the loading
+  // sequence always renders on first visit and after a hard refresh.
+  const [ready, setReady] = useState(false);
 
   return (
     <>

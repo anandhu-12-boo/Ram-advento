@@ -1,15 +1,7 @@
-import logoAsset from "@/assets/logo.png.asset.json";
-import heroVideoAsset from "@/assets/hero-video.mp4.asset.json";
-import forestVideoAsset from "@/assets/forest-video.mp4.asset.json";
-import heroPosterAsset from "@/assets/hero-poster.jpg.asset.json";
-import forestPosterAsset from "@/assets/forest-poster.jpg.asset.json";
-import valleyAsset from "@/assets/valley.jpg.asset.json";
-import localFallbackPoster from "@/assets/dest-kolukkumalai.jpg";
-
-export const brandLogo = logoAsset.url;
-export const heroVideo = heroVideoAsset.url;
-export const forestVideo = forestVideoAsset.url;
-export const heroPoster = heroPosterAsset.url;
-export const forestPoster = forestPosterAsset.url;
-export const valleyImage = valleyAsset.url;
-export const localHeroFallback = localFallbackPoster;
+export const brandLogo = "/assets/ram-logo.png";
+export const heroVideo = "/assets/ram-hero.mp4";
+export const forestVideo = "/assets/ram-forest.mp4";
+export const heroPoster = "/assets/ram-home-page.jpg";
+export const forestPoster = "/assets/ram-home-page.jpg";
+export const valleyImage = "/assets/ram-scene-fallback.jpg";
+export const localHeroFallback = "/assets/ram-scene-fallback.jpg";

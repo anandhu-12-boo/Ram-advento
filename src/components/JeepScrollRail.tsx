@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
 

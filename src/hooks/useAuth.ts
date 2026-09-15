@@ -11,17 +11,27 @@ export function useSupabaseSession() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+
+    const finish = () => {
+      if (active) setLoading(false);
+    };
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        setSession(data.session);
+        finish();
+      })
+      .catch(() => finish());
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
-      setLoading(false);
+      finish();
     });
+
     return () => {
       active = false;
       subscription.unsubscribe();

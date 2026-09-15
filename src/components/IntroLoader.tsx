@@ -1,33 +1,49 @@
+"use client";
+
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
 import { brandLogo, heroPoster, heroVideo } from "@/lib/media";
 
-const MIN_DURATION = 2000;
-const MAX_DURATION = 4500;
+const MIN_DURATION = 2200;
+const MAX_DURATION = 4200;
 
 /** Preload the critical homepage assets, resolving on error too so we never stall. */
 function preloadAssets(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
 
-  const image = (src: string) =>
+  const safe = (src?: string) => (src && src.trim().length ? src : "");
+
+  const image = (src?: string) =>
     new Promise<void>((resolve) => {
+      const next = safe(src);
+      if (!next) {
+        resolve();
+        return;
+      }
+
       const img = new Image();
       img.onload = () => resolve();
       img.onerror = () => resolve();
-      img.src = src;
+      img.src = next;
     });
 
-  const video = (src: string) =>
+  const video = (src?: string) =>
     new Promise<void>((resolve) => {
+      const next = safe(src);
+      if (!next) {
+        resolve();
+        return;
+      }
+
       try {
         const el = document.createElement("video");
         el.preload = "metadata";
         el.muted = true;
         el.onloadedmetadata = () => resolve();
         el.onerror = () => resolve();
-        el.src = src;
+        el.src = next;
       } catch {
         resolve();
       }
@@ -49,6 +65,8 @@ export function IntroLoader({ onDone }: { onDone: () => void }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     let finished = false;
     const start = Date.now();
 
