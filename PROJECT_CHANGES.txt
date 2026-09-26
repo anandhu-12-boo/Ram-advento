@@ -1,0 +1,34 @@
+RAM-TOURS PROJECT CHANGES LOG
+==================================================
+
+1. Fixed Vite Import & Build Error:
+   Resolved "Failed to resolve import 'mongoose'" by removing browser-incompatible mongoose calls from frontend files.
+
+2. Secured Database Credentials:
+   Removed src/lib/mongodb.ts which exposed plain-text MongoDB passwords in frontend client code.
+
+3. Refactored Frontend Utilities:
+   Updated account.functions.ts and admin.functions.ts to run safely in browser code without direct database drivers.
+
+4. Removed Supabase Integration:
+   Removed all Supabase keys (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) from environment files.
+
+5. Migrated to MongoDB:
+   Configured MONGODB_URL in .env files and created Mongoose schemas for Tour, Availability, Booking, Review, Enquiry, and User in backend/src/db/mongodb.ts.
+
+6. Built Express REST API Server:
+   Created Node.js backend routes under /api/ for tours, availability, bookings, account, enquiries, reviews, and admin analytics.
+
+7. Seeded Admin Credentials:
+   Created seeding scripts with default admin login credentials (admin@ramtours.com / AdminPassword123!).
+
+8. Restructured Folder Architecture:
+   Separated the workspace into two clean top-level directories:
+   - frontend/: Vite + React frontend app
+   - backend/: Express + Node.js backend app
+
+9. Added Root Package Manager:
+   Created a root package.json with npm run dev:frontend and npm run dev:backend commands.
+
+10. Pushed Changes to GitHub:
+    Staged, committed, and pushed all updates to https://github.com/anandhu-12-boo/Ram-Tours.
