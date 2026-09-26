@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { SiteShell } from "@/components/SiteShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -12,143 +10,179 @@ import { resolveTourImage } from "@/lib/tour-images";
 import { btnGhost, btnPrimary, btnSmall, inr } from "@/lib/ui";
 import { downloadBookingSlip } from "@/lib/booking-slip";
 
-export const Route = createFileRoute("/_authenticated/my-account/bookings/")({
-  component: MyBookingsPage,
-  head: () => ({
-    meta: [
-      { title: "My bookings | Ram Adventure" },
-      { name: "description", content: "All your Ram Adventure bookings and their current status." },
-      { property: "og:title", content: "My bookings | Ram Adventure" },
-      { property: "og:description", content: "Track every Munnar trip you have booked." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
-});
-
-function MyBookingsPage() {
-  const queryClient = useQueryClient();
-  const fetchBookings = useServerFn(listMyBookings);
-  const cancelFn = useServerFn(cancelMyBooking);
+export default function MyBookingsPage() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
-  const bookings = useQuery({ queryKey: ["my-bookings"], queryFn: () => fetchBookings() });
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      let data = await listMyBookings();
+      try {
+        const localRaw = localStorage.getItem("my_bookings");
+        if (localRaw) {
+          const localBookings = JSON.parse(localRaw);
+          if (Array.isArray(localBookings) && localBookings.length > 0) {
+            const serverIds = new Set(data.map((b: any) => b.booking_id));
+            const newFromLocal = localBookings.filter((b: any) => !serverIds.has(b.booking_id));
+            data = [...newFromLocal, ...data];
+          }
+        }
+      } catch (err) {
+        console.warn("Notice: local my_bookings parsing error:", err);
+      }
+      setRows(data);
+    } catch (e) {
+      console.warn("Notice: listMyBookings error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const cancel = useMutation({
-    mutationFn: (bookingId: string) => cancelFn({ data: { bookingId } }),
-    onSuccess: async () => {
+  useEffect(() => {
+    document.title = "My bookings | Ram Adventure";
+    loadData();
+  }, []);
+
+  const handleCancel = async (bookingId: string) => {
+    setCancelling(true);
+    try {
+      await cancelMyBooking({ bookingId });
       toast.success("Booking cancelled.");
       setConfirming(null);
-      await queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const rows = (bookings.data ?? []) as any[];
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message || "Cancellation failed.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <SiteShell>
-      <section className="mx-auto max-w-5xl px-6 pt-32 pb-24">
-        <p className="eyebrow">Your bookings</p>
-        <h1 className="mt-3 font-display text-[clamp(2.2rem,6vw,3.6rem)] text-mist">My bookings</h1>
+      <section className="mx-auto max-w-6xl px-6 pt-32 pb-24">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Your bookings</p>
+            <h1 className="mt-2 font-display text-[clamp(2.2rem,6vw,4rem)] text-mist">
+              My booked trails
+            </h1>
+          </div>
+          <Link to="/book" className={btnPrimary}>
+            Book new trail
+          </Link>
+        </div>
 
-        {bookings.isLoading ? (
-          <div className="mt-10 space-y-3">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-40 w-full" />
+        {loading ? (
+          <div className="mt-10 space-y-4">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
           </div>
         ) : rows.length === 0 ? (
-          <div className="mt-10 rounded-sm border border-white/10 bg-forest-deep/40 p-10 text-center">
-            <p className="text-mist/75">You have no bookings yet.</p>
+          <div className="mt-10 rounded-sm border border-white/10 bg-forest-deep/40 p-12 text-center">
+            <p className="font-display text-2xl text-mist">No bookings found</p>
+            <p className="mt-2 text-sm text-mist/65">You have not booked any safaris or tours yet.</p>
             <Link to="/tours" className={`${btnPrimary} mt-6`}>
-              Find an adventure
+              Browse tours
             </Link>
           </div>
         ) : (
-          <ul className="mt-10 space-y-5">
+          <ul className="mt-10 space-y-4">
             {rows.map((b) => (
-              <li key={b.id} className="rounded-sm border border-white/10 bg-forest-deep/50 p-5">
-                <div className="flex flex-wrap gap-5">
+              <li
+                key={b.id}
+                className="flex flex-wrap items-center justify-between gap-6 rounded-sm border border-white/10 bg-forest-deep/55 p-6"
+              >
+                <div className="flex flex-wrap items-center gap-5">
                   <img
                     src={resolveTourImage(b.tours?.images?.[0])}
                     alt={b.tours?.title ?? "Tour"}
                     loading="lazy"
-                    className="h-28 w-40 rounded-sm object-cover"
+                    className="h-20 w-28 rounded-sm object-cover"
                   />
-                  <div className="min-w-48 flex-1">
-                    <p className="text-[0.6rem] tracking-[0.2em] text-sand uppercase">
+                  <div>
+                    <p className="text-[0.62rem] font-bold tracking-[0.2em] text-sand uppercase">
                       {b.booking_id}
                     </p>
                     <p className="font-display text-2xl text-mist">{b.tours?.title}</p>
-                    <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm text-mist/70 sm:grid-cols-2">
-                      <div>Date: {b.booking_date}</div>
-                      <div>Time: {b.time_slot}</div>
-                      <div>Guests: {b.guests}</div>
-                      <div>Vehicle: {b.vehicle || b.tours?.vehicle}</div>
-                      <div className="sm:col-span-2">Pickup: {b.pickup_location}</div>
-                    </dl>
+                    <p className="mt-1 text-sm text-mist/70">
+                      {b.booking_date} · {b.time_slot} · {b.guests} guests · {b.pickup_location}
+                    </p>
                   </div>
-                  <div className="flex flex-col items-start gap-3 sm:items-end">
-                    <span className="font-display text-3xl text-sand">
-                      {b.total_amount ? inr(b.total_amount) : "Quote on call"}
-                    </span>
-                    <div className="flex gap-2">
+                </div>
+
+                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
+                  <div className="text-right sm:mr-4">
+                    <p className="font-display text-2xl text-sand">
+                      {b.total_amount ? inr(b.total_amount) : "On call"}
+                    </p>
+                    <div className="mt-1 flex gap-2 justify-end">
                       <StatusBadge value={b.payment_status} kind="payment" />
                       <StatusBadge value={b.booking_status} />
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4">
-                  <Link
-                    to="/my-account/bookings/$bookingId"
-                    params={{ bookingId: b.booking_id }}
-                    className={btnSmall}
-                  >
-                    View details
-                  </Link>
-                  <button type="button" className={btnSmall} onClick={() => downloadBookingSlip(b)}>
-                    Download booking
-                  </button>
-                  {!["cancelled", "completed"].includes(b.booking_status) &&
-                    (confirming === b.booking_id ? (
-                      <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-mist/70">Cancel this trip?</span>
-                        <button
-                          type="button"
-                          disabled={cancel.isPending}
-                          onClick={() => cancel.mutate(b.booking_id)}
-                          className={`${btnSmall} border-red-400/50 text-red-200`}
-                        >
-                          {cancel.isPending ? "Cancelling…" : "Yes, cancel"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirming(null)}
-                          className={btnSmall}
-                        >
-                          Keep it
-                        </button>
-                      </span>
-                    ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      to={`/my-account/bookings/${b.booking_id}`}
+                      className={`${btnGhost} px-4 py-2 text-xs`}
+                    >
+                      Details
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => downloadBookingSlip(b)}
+                      className={`${btnGhost} px-4 py-2 text-xs`}
+                    >
+                      Receipt
+                    </button>
+                    {b.booking_status !== "cancelled" && (
                       <button
                         type="button"
                         onClick={() => setConfirming(b.booking_id)}
-                        className={`${btnSmall} border-red-400/40 text-red-200`}
+                        className={`${btnSmall} bg-destructive/20 text-destructive border-destructive/40 hover:bg-destructive/40`}
                       >
-                        Cancel booking
+                        Cancel
                       </button>
-                    ))}
+                    )}
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         )}
 
-        <Link to="/my-account" className={`${btnGhost} mt-12`}>
-          Back to account
-        </Link>
+        {/* Cancellation confirmation modal */}
+        {confirming && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-4">
+            <div className="max-w-md rounded-sm border border-white/10 bg-forest-deep p-6 text-center">
+              <h3 className="font-display text-2xl text-mist">Cancel this booking?</h3>
+              <p className="mt-2 text-sm text-mist/70">
+                Are you sure you want to cancel booking <strong className="text-sand">{confirming}</strong>?
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirming(null)}
+                  className={btnGhost}
+                  disabled={cancelling}
+                >
+                  Keep booking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCancel(confirming)}
+                  disabled={cancelling}
+                  className={`${btnPrimary} bg-destructive hover:bg-destructive/80`}
+                >
+                  {cancelling ? "Cancelling…" : "Yes, cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </SiteShell>
   );

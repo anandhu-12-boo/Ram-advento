@@ -1,7 +1,7 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { Download, MessageCircle, Ticket } from "lucide-react";
-import { z } from "zod";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
 import { SiteShell } from "@/components/SiteShell";
@@ -9,42 +9,25 @@ import { heroPoster } from "@/lib/media";
 import { contact, tours, vehicles } from "@/lib/site-data";
 import { btnGhost, btnPrimary, inr } from "@/lib/ui";
 
-const searchSchema = z.object({
-  id: z.string().default("RA000000"),
-  tour: z.string().default("munnar-jeep-safari"),
-  date: z.string().default(""),
-  time: z.string().default(""),
-  guests: z.coerce.number().default(2),
-  vehicle: z.string().default("thar"),
-  pickup: z.string().default("Munnar Town"),
-  amount: z.coerce.number().default(0),
-});
-
-export const Route = createFileRoute("/booking-confirmed")({
-  validateSearch: (search) => searchSchema.parse(search),
-  component: SuccessPage,
-  head: () => ({
-    meta: [
-      { title: "Adventure Confirmed | Ram Adventure Munnar" },
-      {
-        name: "description",
-        content:
-          "Your Munnar jeep safari with Ram Adventure is confirmed. Booking details and next steps.",
-      },
-      { property: "og:title", content: "Adventure Confirmed | Ram Adventure Munnar" },
-      { property: "og:description", content: "Your Munnar adventure is officially booked." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/booking-confirmed" },
-      { name: "robots", content: "noindex" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/booking-confirmed" }],
-  }),
-});
-
-function SuccessPage() {
-  const s = Route.useSearch();
+export default function BookingConfirmedPage() {
+  const [searchParams] = useSearchParams();
   const reduce = useReducedMotion();
+
+  useEffect(() => {
+    document.title = "Adventure Confirmed | Ram Adventure Munnar";
+  }, []);
+
+  const s = {
+    id: searchParams.get("id") || "RA000000",
+    tour: searchParams.get("tour") || "munnar-jeep-safari",
+    date: searchParams.get("date") || "",
+    time: searchParams.get("time") || "",
+    guests: Number(searchParams.get("guests") || "2"),
+    vehicle: searchParams.get("vehicle") || "thar",
+    pickup: searchParams.get("pickup") || "Munnar Town",
+    amount: Number(searchParams.get("amount") || "0"),
+  };
+
   const tour = tours.find((t) => t.slug === s.tour) ?? tours[0]!;
   const vehicleName = vehicles.find((v) => v.id === s.vehicle)?.name ?? s.vehicle;
 
@@ -132,7 +115,7 @@ function SuccessPage() {
             <button type="button" onClick={downloadBooking} className={btnPrimary}>
               <Download size={15} /> Download booking
             </button>
-            <Link to="/tours" className={btnGhost}>
+            <Link to="/my-account/bookings" className={btnGhost}>
               <Ticket size={15} /> View my bookings
             </Link>
             <a

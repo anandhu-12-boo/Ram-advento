@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { CalendarCheck, CheckCircle2, XCircle, Ticket } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -11,27 +10,21 @@ import { listMyBookings } from "@/lib/account.functions";
 import { resolveTourImage } from "@/lib/tour-images";
 import { btnGhost, btnPrimary, inr } from "@/lib/ui";
 
-export const Route = createFileRoute("/_authenticated/my-account/")({
-  component: MyAccountPage,
-  head: () => ({
-    meta: [
-      { title: "My account | Ram Adventure" },
-      { name: "description", content: "Your Ram Adventure trips, bookings and trip status." },
-      { property: "og:title", content: "My account | Ram Adventure" },
-      { property: "og:description", content: "Track your Munnar adventures." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
-});
-
-function MyAccountPage() {
+export default function MyAccountPage() {
   const { displayName } = useAuth();
-  const fetchBookings = useServerFn(listMyBookings);
-  const bookings = useQuery({ queryKey: ["my-bookings"], queryFn: () => fetchBookings() });
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const rows = (bookings.data ?? []) as any[];
+  useEffect(() => {
+    document.title = "My account | Ram Adventure";
+    listMyBookings()
+      .then((res) => {
+        setRows(res);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = rows.filter(
     (b) => b.booking_date >= today && !["cancelled", "completed"].includes(b.booking_status),
@@ -59,7 +52,7 @@ function MyAccountPage() {
             <div key={s.label} className="rounded-sm border border-white/10 bg-forest-deep/50 p-6">
               <s.icon size={20} className="text-sand" />
               <p className="mt-4 font-display text-4xl text-mist">
-                {bookings.isLoading ? <Skeleton className="h-9 w-12" /> : s.value}
+                {loading ? <Skeleton className="h-9 w-12" /> : s.value}
               </p>
               <p className="mt-1 text-[0.62rem] font-semibold tracking-[0.2em] text-mist/55 uppercase">
                 {s.label}
@@ -75,7 +68,7 @@ function MyAccountPage() {
           </Link>
         </div>
 
-        {bookings.isLoading ? (
+        {loading ? (
           <div className="mt-6 space-y-3">
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
@@ -92,8 +85,7 @@ function MyAccountPage() {
             {upcoming.map((b) => (
               <li key={b.id}>
                 <Link
-                  to="/my-account/bookings/$bookingId"
-                  params={{ bookingId: b.booking_id }}
+                  to={`/my-account/bookings/${b.booking_id}`}
                   className="flex flex-wrap items-center gap-5 rounded-sm border border-white/10 bg-forest-deep/50 p-4 transition-colors hover:border-sand/60"
                 >
                   <img

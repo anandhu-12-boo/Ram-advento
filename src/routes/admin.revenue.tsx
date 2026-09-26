@@ -1,11 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AdminResourcePage } from "@/components/admin/AdminResourcePage";
-export const Route = createFileRoute("/admin/revenue")({
-  component: () => (
+
+export default function AdminRevenuePage() {
+  useEffect(() => {
+    document.title = "Revenue | Admin | Ram Adventure";
+  }, []);
+
+  return (
     <AdminResourcePage
       resource="revenue"
       title="Revenue"
-      description="See persisted revenue totals for today, this week, this month, and the lifetime booking record."
+      description="Track total revenue collected, daily breakdown and weekly financial performance."
     />
-  ),
-});
+  );
+}

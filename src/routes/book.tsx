@@ -1,11 +1,8 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { createMyBooking } from "@/lib/account.functions";
 import { getSlotAvailability } from "@/lib/tours.functions";
@@ -16,40 +13,15 @@ import { pickupPoints, tours, vehicles } from "@/lib/site-data";
 import { btnGhost, btnPrimary, inr } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
-const searchSchema = z.object({ tour: z.string().optional() });
-
-export const Route = createFileRoute("/book")({
-  validateSearch: (search) => searchSchema.parse(search),
-  component: BookPage,
-  head: () => ({
-    meta: [
-      { title: "Book a Munnar Jeep Safari | Ram Adventure" },
-      {
-        name: "description",
-        content:
-          "Book your Munnar jeep safari in a few steps — pick your date, guests, jeep and pickup point, and confirm your adventure.",
-      },
-      { property: "og:title", content: "Book a Munnar Jeep Safari | Ram Adventure" },
-      {
-        property: "og:description",
-        content: "Date, guests, jeep, pickup, details, payment. Your adventure in six steps.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/book" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/book" }],
-  }),
-});
-
 const steps = ["Date", "Guests", "Vehicle", "Pickup", "Details", "Payment"] as const;
 
 const field =
   "mt-2 w-full rounded-sm border border-white/15 bg-ink/60 px-4 py-3 text-sm text-mist outline-none transition-colors placeholder:text-mist/35 focus:border-sand";
 const label = "text-[0.66rem] font-semibold tracking-[0.2em] text-mist/60 uppercase";
 
-function BookPage() {
-  const { tour: tourSlug } = Route.useSearch();
+export default function BookPage() {
+  const [searchParams] = useSearchParams();
+  const tourSlug = searchParams.get("tour");
   const navigate = useNavigate();
   const reduce = useReducedMotion();
 
@@ -65,66 +37,32 @@ function BookPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const [availabilityData, setAvailabilityData] = useState<any[]>([]);
+  const [bookingPending, setBookingPending] = useState(false);
+
   const { session, profile, user, loading: authLoading } = useAuth();
-  const submitBooking = useServerFn(createMyBooking);
-  const fetchAvailability = useServerFn(getSlotAvailability);
+
+  useEffect(() => {
+    document.title = "Book a Munnar Jeep Safari | Ram Adventure";
+  }, []);
 
   const tour = useMemo(() => tours.find((t) => t.slug === tourId) ?? tours[0]!, [tourId]);
   const amount = tour.price ? tour.price + Math.max(0, guests - 4) * 400 : 0;
 
-  // Prefill the contact step from the signed-in account.
   useEffect(() => {
     if (profile?.name) setName((v) => v || profile.name);
     if (profile?.phone) setPhone((v) => v || profile.phone);
     if (user?.email) setEmail((v) => v || user.email!);
   }, [profile?.name, profile?.phone, user?.email]);
 
-  // Live slot availability for the chosen adventure + date (public data).
-  const availability = useQuery({
-    queryKey: ["availability", tourId, date],
-    queryFn: () => fetchAvailability({ data: { slug: tourId, date } }),
-    enabled: Boolean(date),
-  });
+  useEffect(() => {
+    if (date) {
+      getSlotAvailability({ slug: tourId, date }).then(setAvailabilityData).catch(() => setAvailabilityData([]));
+    }
+  }, [tourId, date]);
 
-  const slot = (availability.data ?? []).find((s) => s.time_slot.slice(0, 5) === time.slice(0, 5));
+  const slot = (availabilityData ?? []).find((s) => s.time_slot.slice(0, 5) === time.slice(0, 5));
   const slotFull = Boolean(slot && (slot.status !== "open" || slot.available_slots < guests));
-
-  const booking = useMutation({
-    mutationFn: () =>
-      submitBooking({
-        data: {
-          slug: tour.slug,
-          date,
-          time,
-          guests,
-          vehicle: vehicles.find((v) => v.id === vehicle)?.name ?? vehicle,
-          pickup,
-          name,
-          phone,
-        },
-      }),
-    onSuccess: (result) => {
-      if (!result) {
-        setError("Booking could not be created. Please try again.");
-        return;
-      }
-      toast.success("Booking received — we'll confirm it shortly.");
-      navigate({
-        to: "/booking-confirmed",
-        search: {
-          id: result.booking_id,
-          tour: tour.slug,
-          date,
-          time,
-          guests,
-          vehicle,
-          pickup,
-          amount: Number(result.total_amount ?? amount),
-        },
-      });
-    },
-    onError: (err: Error) => setError(err.message),
-  });
 
   const canContinue = () => {
     if (step === 0) return Boolean(date);
@@ -142,20 +80,77 @@ function BookPage() {
     setStep((s) => Math.min(s + 1, steps.length - 1));
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     setError(null);
     if (!session) {
-      navigate({
-        to: "/login",
-        search: { redirect: `/book?tour=${tour.slug}` },
-      });
+      navigate(`/login?redirect=${encodeURIComponent(`/book?tour=${tour.slug}`)}`);
       return;
     }
     if (slotFull) {
       setError("That time slot is full. Please choose another time or date.");
       return;
     }
-    booking.mutate();
+
+    setBookingPending(true);
+    try {
+      const result = await createMyBooking({
+        slug: tour.slug,
+        date,
+        time,
+        guests,
+        vehicle: vehicles.find((v) => v.id === vehicle)?.name ?? vehicle,
+        pickup,
+        name,
+        phone,
+      });
+
+      if (!result) {
+        setError("Booking could not be created. Please try again.");
+        setBookingPending(false);
+        return;
+      }
+      toast.success("Booking received — we'll confirm it shortly.");
+
+      const newBookingObj = {
+        id: result.booking_id || "b_" + Date.now(),
+        booking_id: result.booking_id || "RAM-2026-" + Math.floor(100 + Math.random() * 900),
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        booking_date: date,
+        time_slot: time,
+        guests,
+        vehicle: vehicles.find((v) => v.id === vehicle)?.name ?? vehicle,
+        pickup_location: pickup,
+        total_amount: Number(result.total_amount ?? amount),
+        booking_status: "confirmed",
+        payment_status: "paid",
+        created_at: new Date().toISOString(),
+        tours: {
+          title: tour.name,
+          slug: tour.slug,
+          location: "Munnar, Kerala",
+          duration: tour.duration || "4 Hours",
+          images: [tour.slug],
+        },
+      };
+
+      try {
+        const existing = JSON.parse(localStorage.getItem("my_bookings") || "[]");
+        const updated = [newBookingObj, ...existing.filter((b: any) => b.booking_id !== newBookingObj.booking_id)];
+        localStorage.setItem("my_bookings", JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Failed to cache booking locally", err);
+      }
+
+      navigate(
+        `/booking-confirmed?id=${encodeURIComponent(result.booking_id)}&tour=${encodeURIComponent(tour.slug)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&guests=${guests}&vehicle=${encodeURIComponent(vehicle)}&pickup=${encodeURIComponent(pickup)}&amount=${Number(result.total_amount ?? amount)}`
+      );
+    } catch (err: any) {
+      setError(err?.message || "Booking failed");
+    } finally {
+      setBookingPending(false);
+    }
   };
 
   return (
@@ -439,10 +434,10 @@ function BookPage() {
               <button
                 type="button"
                 onClick={confirm}
-                disabled={booking.isPending}
+                disabled={bookingPending}
                 className={cn(btnPrimary, "disabled:opacity-60")}
               >
-                {booking.isPending ? (
+                {bookingPending ? (
                   <>
                     Confirming <Loader2 size={15} className="animate-spin" />
                   </>

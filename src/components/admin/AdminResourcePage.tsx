@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase result rows are runtime-shaped. */
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
 import { AdminLayout, adminCard, adminLabel } from "@/components/admin/AdminLayout";
 import {
   getAdminOverview,
@@ -13,7 +12,12 @@ import {
 import { inr } from "@/lib/ui";
 
 export type AdminResource =
-  "tours" | "availability" | "customers" | "revenue" | "reviews" | "enquiries";
+  | "tours"
+  | "availability"
+  | "customers"
+  | "revenue"
+  | "reviews"
+  | "enquiries";
 
 export function AdminResourcePage({
   resource,
@@ -24,41 +28,50 @@ export function AdminResourcePage({
   title: string;
   description: string;
 }) {
-  const overviewFn = useServerFn(getAdminOverview);
-  const toursFn = useServerFn(listAdminTours);
-  const availabilityFn = useServerFn(listAvailability);
-  const customersFn = useServerFn(listCustomers);
-  const reviewsFn = useServerFn(listAdminReviews);
-  const enquiriesFn = useServerFn(listEnquiries);
-  const query = useQuery({
-    queryKey: ["admin-resource", resource],
-    queryFn: () =>
-      ({
-        tours: toursFn,
-        availability: availabilityFn,
-        customers: customersFn,
-        revenue: overviewFn,
-        reviews: reviewsFn,
-        enquiries: enquiriesFn,
-      })[resource](),
-  });
-  const rows: any = query.data;
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    const fetchers = {
+      tours: listAdminTours,
+      availability: listAvailability,
+      customers: listCustomers,
+      revenue: getAdminOverview,
+      reviews: listAdminReviews,
+      enquiries: listEnquiries,
+    };
+
+    fetchers[resource]()
+      .then((res) => {
+        if (active) {
+          setData(res);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Notice: error loading resource:", err);
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [resource]);
 
   return (
     <AdminLayout>
       <p className="eyebrow">Operations / live data</p>
       <h1 className="mt-2 font-display text-[clamp(2.2rem,5vw,4rem)] text-mist">{title}.</h1>
       <p className="mt-2 max-w-2xl text-sm text-mist/60">{description}</p>
-      {query.isError && (
-        <p className="mt-8 rounded-sm border border-red-300/20 bg-red-950/30 p-4 text-sm text-red-100">
-          Could not load this module. Check your admin session and database connection.
-        </p>
-      )}
       <div className="mt-10 grid gap-4">
-        {resource === "revenue" ? (
-          <Revenue data={rows} />
+        {loading ? (
+          <div className="p-8 text-center text-sm text-mist/55">Loading live data…</div>
+        ) : resource === "revenue" ? (
+          <Revenue data={data} />
         ) : (
-          <Rows resource={resource} data={rows} />
+          <Rows resource={resource} data={data} />
         )}
       </div>
     </AdminLayout>
@@ -161,15 +174,12 @@ function Rows({ resource, data }: { resource: AdminResource; data: any }) {
                 </>
               )}
             </tr>
-          ))}{" "}
+          ))}
         </tbody>
       </table>
-      {!queryLength(rows) && (
+      {rows.length === 0 && (
         <p className="p-8 text-center text-sm text-mist/55">No records yet.</p>
       )}
     </div>
   );
-}
-function queryLength(data: any) {
-  return Array.isArray(data) ? data.length : 0;
 }

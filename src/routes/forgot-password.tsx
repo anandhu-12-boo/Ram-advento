@@ -1,31 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { AuthCard, authField, authLabel } from "@/components/auth/AuthCard";
 import { supabase } from "@/integrations/supabase/client";
 import { btnPrimary } from "@/lib/ui";
 
-export const Route = createFileRoute("/forgot-password")({
-  component: ForgotPasswordPage,
-  head: () => ({
-    meta: [
-      { title: "Reset your password | Ram Adventure" },
-      {
-        name: "description",
-        content: "Request a password reset link for your Ram Adventure Munnar account.",
-      },
-      { property: "og:title", content: "Reset your password | Ram Adventure" },
-      { property: "og:description", content: "We will email you a reset link." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-});
-
-function ForgotPasswordPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "Reset your password | Ram Adventure";
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

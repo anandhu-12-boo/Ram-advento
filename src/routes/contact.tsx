@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -9,29 +9,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { contact } from "@/lib/site-data";
 import { heroPoster } from "@/lib/media";
 import { btnPrimary } from "@/lib/ui";
-
-export const Route = createFileRoute("/contact")({
-  component: ContactPage,
-  head: () => ({
-    meta: [
-      { title: "Contact Ram Adventure | Munnar Jeep Safari Booking" },
-      {
-        name: "description",
-        content:
-          "Call, WhatsApp or message Ram Adventure to plan your Munnar jeep safari. Local team available 24/7 in Munnar, Kerala.",
-      },
-      { property: "og:title", content: "Contact Ram Adventure | Munnar Jeep Safari Booking" },
-      {
-        property: "og:description",
-        content: "Reach our Munnar team any time to plan your jeep safari.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/contact" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/contact" }],
-  }),
-});
+import { submitEnquiry } from "@/lib/tours.functions";
 
 const schema = z.object({
   name: z.string().min(2, "Please tell us your name"),
@@ -46,7 +24,7 @@ const field =
   "mt-2 w-full rounded-sm border border-white/15 bg-ink/60 px-4 py-3 text-sm text-mist outline-none transition-colors placeholder:text-mist/35 focus:border-sand";
 const label = "text-[0.66rem] font-semibold tracking-[0.2em] text-mist/60 uppercase";
 
-function ContactPage() {
+export default function ContactPage() {
   const {
     register,
     handleSubmit,
@@ -54,11 +32,20 @@ function ContactPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const onSubmit = (values: FormValues) => {
-    toast.success("Message noted", {
-      description: `Thanks ${values.name}, our Munnar team will call you shortly.`,
-    });
-    reset();
+  useEffect(() => {
+    document.title = "Contact Ram Adventure | Munnar Jeep Safari Booking";
+  }, []);
+
+  const onSubmit = async (values: FormValues) => {
+    try {
+      await submitEnquiry(values);
+      toast.success("Message noted", {
+        description: `Thanks ${values.name}, our Munnar team will call you shortly.`,
+      });
+      reset();
+    } catch (e: any) {
+      toast.error(e?.message || "Could not send message right now.");
+    }
   };
 
   return (

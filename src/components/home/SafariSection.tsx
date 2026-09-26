@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
 import { JeepDriveBy, Reveal } from "@/components/Reveal";
 import { destinations } from "@/lib/site-data";

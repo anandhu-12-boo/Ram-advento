@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
 import { galleryItems } from "@/lib/site-data";
 import { btnGhost } from "@/lib/ui";

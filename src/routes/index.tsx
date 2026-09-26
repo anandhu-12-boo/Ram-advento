@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IntroLoader } from "@/components/IntroLoader";
 import { SiteShell } from "@/components/SiteShell";
 import { AboutMunnar } from "@/components/home/AboutMunnar";
@@ -11,47 +10,12 @@ import { PackagesSection } from "@/components/home/PackagesSection";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { SafariSection } from "@/components/home/SafariSection";
 
-export const Route = createFileRoute("/")({
-  component: Home,
-  head: () => ({
-    meta: [
-      { title: "Ram Adventure | Munnar Jeep Safari & Tours" },
-      {
-        name: "description",
-        content:
-          "Explore Munnar with Ram Adventure. Experience unforgettable jeep safaris, mountain trails, sightseeing tours and authentic Kerala adventures.",
-      },
-      { property: "og:title", content: "Ram Adventure | Munnar Jeep Safari & Tours" },
-      {
-        property: "og:description",
-        content:
-          "Cinematic jeep safaris across Munnar — Kolukkumalai sunrise, Top Station, Vattavada and the trails only locals know.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "TravelAgency",
-          name: "Ram Adventure",
-          description: "Munnar Jeep Safari & Tours",
-          areaServed: "Munnar, Kerala, India",
-          slogan: "Adventure Begins Where The Road Ends.",
-        }),
-      },
-    ],
-  }),
-});
-
-function Home() {
-  // Keep the homepage hidden until the intro loader completes so the loading
-  // sequence always renders on first visit and after a hard refresh.
+export default function HomePage() {
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    document.title = "Ram Adventure | Munnar Jeep Safari & Tours";
+  }, []);
 
   return (
     <>

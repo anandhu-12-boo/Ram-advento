@@ -1,11 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AdminResourcePage } from "@/components/admin/AdminResourcePage";
-export const Route = createFileRoute("/admin/enquiries")({
-  component: () => (
+
+export default function AdminEnquiriesPage() {
+  useEffect(() => {
+    document.title = "Enquiries | Admin | Ram Adventure";
+  }, []);
+
+  return (
     <AdminResourcePage
       resource="enquiries"
       title="Enquiries"
-      description="Track contact enquiries and their persisted resolution status."
+      description="Respond to contact requests, custom safari inquiries and messages."
     />
-  ),
-});
+  );
+}

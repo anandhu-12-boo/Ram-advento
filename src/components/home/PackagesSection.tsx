@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Clock, Star, Users } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { tours } from "@/lib/site-data";

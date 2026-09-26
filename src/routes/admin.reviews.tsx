@@ -1,11 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AdminResourcePage } from "@/components/admin/AdminResourcePage";
-export const Route = createFileRoute("/admin/reviews")({
-  component: () => (
+
+export default function AdminReviewsPage() {
+  useEffect(() => {
+    document.title = "Reviews | Admin | Ram Adventure";
+  }, []);
+
+  return (
     <AdminResourcePage
       resource="reviews"
       title="Reviews"
-      description="Moderate customer reviews from the secured review store before they appear publicly."
+      description="Moderate customer feedback, approve testimonials and review ratings."
     />
-  ),
-});
+  );
+}

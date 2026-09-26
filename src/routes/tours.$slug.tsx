@@ -1,4 +1,5 @@
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Check, Clock, MapPin, Star, Truck, Users, X } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { SiteShell } from "@/components/SiteShell";
@@ -11,36 +12,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-export const Route = createFileRoute("/tours/$slug")({
-  loader: ({ params }) => {
-    const tour = tours.find((t) => t.slug === params.slug);
-    if (!tour) throw notFound();
-    return { tour };
-  },
-  component: TourDetail,
-  head: ({ params, loaderData }) => {
-    const tour = loaderData?.tour;
-    const title = tour ? `${tour.name} — Munnar | Ram Adventure` : "Tour | Ram Adventure";
-    const description = tour
-      ? `${tour.tagline}. ${tour.duration} in ${tour.location}, from ${tour.price ? inr(tour.price) : "custom pricing"}.`
-      : "Munnar jeep safari tour details.";
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "product" },
-        { property: "og:url", content: `/tours/${params.slug}` },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-      links: [{ rel: "canonical", href: `/tours/${params.slug}` }],
-    };
-  },
-});
+export default function TourDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const tour = tours.find((t) => t.slug === slug) || tours[0];
 
-function TourDetail() {
-  const { tour } = Route.useLoaderData();
+  useEffect(() => {
+    if (tour) {
+      document.title = `${tour.name} — Munnar | Ram Adventure`;
+    }
+  }, [tour]);
 
   return (
     <SiteShell>
@@ -58,58 +38,50 @@ function TourDetail() {
         />
         <div className="relative mx-auto w-full max-w-7xl px-6 pb-14">
           <p className="eyebrow">{tour.location}</p>
-          <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.4rem,7vw,5.4rem)] text-mist">
+          <h1 className="mt-2 font-display text-[clamp(2.4rem,6vw,5rem)] text-mist">
             {tour.name}
           </h1>
-          <p className="mt-3 max-w-xl text-mist/75">{tour.tagline}</p>
-
-          <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-3 text-[0.7rem] font-semibold tracking-[0.16em] text-mist/70 uppercase">
-            <li className="flex items-center gap-2">
-              <Clock size={14} className="text-sand" />
-              {tour.duration}
-            </li>
-            <li className="flex items-center gap-2">
-              <Truck size={14} className="text-sand" />
-              {tour.vehicle}
-            </li>
-            <li className="flex items-center gap-2">
-              <Users size={14} className="text-sand" />
-              Max {tour.maxGuests}
-            </li>
-            <li className="flex items-center gap-2">
-              <Star size={14} className="text-sand" />
-              {tour.rating} ({tour.reviews})
-            </li>
-            <li className="flex items-center gap-2">
-              <MapPin size={14} className="text-sand" />
-              {tour.location}
-            </li>
-          </ul>
-
-          <div className="mt-8 flex flex-wrap items-center gap-5">
-            <p className="font-display text-4xl text-sand">
-              {tour.price ? inr(tour.price) : "On request"}
-            </p>
-            <Link to="/book" search={{ tour: tour.slug }} className={btnPrimary}>
-              Book this adventure
-            </Link>
-          </div>
+          <p className="mt-3 max-w-xl text-lg text-mist/85">{tour.tagline}</p>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1fr_320px]">
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1fr_360px]">
         <div className="space-y-14">
+          <Reveal className="grid gap-4 sm:grid-cols-4">
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
+              <Clock size={18} className="text-sand" />
+              <p className="mt-3 text-[0.65rem] tracking-widest text-mist/50 uppercase">Duration</p>
+              <p className="font-semibold text-mist">{tour.duration}</p>
+            </div>
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
+              <Users size={18} className="text-sand" />
+              <p className="mt-3 text-[0.65rem] tracking-widest text-mist/50 uppercase">Group</p>
+              <p className="font-semibold text-mist">Up to {tour.guests} guests</p>
+            </div>
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
+              <Truck size={18} className="text-sand" />
+              <p className="mt-3 text-[0.65rem] tracking-widest text-mist/50 uppercase">Vehicle</p>
+              <p className="font-semibold text-mist">{tour.vehicle}</p>
+            </div>
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
+              <MapPin size={18} className="text-sand" />
+              <p className="mt-3 text-[0.65rem] tracking-widest text-mist/50 uppercase">Location</p>
+              <p className="font-semibold text-mist">{tour.location}</p>
+            </div>
+          </Reveal>
+
           <Reveal>
-            <h2 className="font-display text-3xl text-mist">Overview</h2>
-            <p className="mt-4 text-mist/75">{tour.overview}</p>
+            <h2 className="font-display text-3xl text-mist">About this trail</h2>
+            <p className="mt-4 text-lg leading-relaxed text-mist/75">{tour.description}</p>
           </Reveal>
 
           <Reveal>
             <h2 className="font-display text-3xl text-mist">Highlights</h2>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 text-mist/80">
               {tour.highlights.map((h) => (
-                <li key={h} className="flex items-start gap-3 text-sm text-mist/80">
-                  <Check size={16} className="mt-0.5 shrink-0 text-sand" /> {h}
+                <li key={h} className="flex items-start gap-3">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-sand shrink-0" />
+                  <span>{h}</span>
                 </li>
               ))}
             </ul>
@@ -117,36 +89,45 @@ function TourDetail() {
 
           <Reveal>
             <h2 className="font-display text-3xl text-mist">Itinerary</h2>
-            <ol className="mt-6 space-y-6 border-l border-sand/30 pl-6">
-              {tour.itinerary.map((step) => (
-                <li key={step.time} className="relative">
-                  <span
-                    aria-hidden
-                    className="absolute top-2 -left-[1.9rem] h-2 w-2 rotate-45 bg-sand"
-                  />
-                  <p className="eyebrow">{step.time}</p>
-                  <p className="mt-1 font-display text-2xl text-mist">{step.title}</p>
-                  <p className="mt-1 text-sm text-mist/70">{step.detail}</p>
-                </li>
+            <div className="mt-6 space-y-6">
+              {tour.itinerary.map((item, i) => (
+                <div key={item.title} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-sand/40 text-xs font-bold text-sand">
+                      {i + 1}
+                    </span>
+                    {i < tour.itinerary.length - 1 && (
+                      <span className="mt-2 h-full w-px bg-white/10" />
+                    )}
+                  </div>
+                  <div className="pb-4">
+                    <p className="text-xs font-bold tracking-widest text-sand uppercase">
+                      {item.time}
+                    </p>
+                    <p className="mt-1 font-display text-xl text-mist">{item.title}</p>
+                    <p className="mt-2 text-sm text-mist/70">{item.detail}</p>
+                  </div>
+                </div>
               ))}
-            </ol>
+            </div>
           </Reveal>
 
-          <Reveal className="grid gap-8 sm:grid-cols-2">
-            <div>
-              <h2 className="font-display text-3xl text-mist">Included</h2>
-              <ul className="mt-4 space-y-2 text-sm text-mist/80">
-                {tour.included.map((i) => (
+          <Reveal className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-6">
+              <p className="font-display text-xl text-mist">Inclusions</p>
+              <ul className="mt-4 space-y-2 text-sm text-mist/75">
+                {tour.inclusions.map((i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check size={16} className="mt-0.5 text-sand" /> {i}
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <h2 className="font-display text-3xl text-mist">Excluded</h2>
-              <ul className="mt-4 space-y-2 text-sm text-mist/60">
-                {tour.excluded.map((i) => (
+
+            <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-6">
+              <p className="font-display text-xl text-mist">Exclusions</p>
+              <ul className="mt-4 space-y-2 text-sm text-mist/75">
+                {tour.exclusions.map((i) => (
                   <li key={i} className="flex items-start gap-2">
                     <X size={16} className="mt-0.5 text-mist/40" /> {i}
                   </li>
@@ -212,7 +193,7 @@ function TourDetail() {
             {tour.price ? inr(tour.price) : "On request"}
           </p>
           <p className="mt-1 text-xs tracking-widest text-mist/50 uppercase">{tour.duration}</p>
-          <Link to="/book" search={{ tour: tour.slug }} className={`${btnPrimary} mt-6 w-full`}>
+          <Link to={`/book?tour=${tour.slug}`} className={`${btnPrimary} mt-6 w-full`}>
             Book this adventure
           </Link>
           <p className="mt-4 text-xs text-mist/60">

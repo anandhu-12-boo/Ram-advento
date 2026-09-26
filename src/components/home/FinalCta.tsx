@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";

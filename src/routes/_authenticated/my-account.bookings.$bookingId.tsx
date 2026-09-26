@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SiteShell } from "@/components/SiteShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -10,21 +9,6 @@ import { getMyBooking } from "@/lib/account.functions";
 import { downloadBookingSlip } from "@/lib/booking-slip";
 import { resolveTourImage } from "@/lib/tour-images";
 import { btnGhost, btnSmall, inr } from "@/lib/ui";
-
-export const Route = createFileRoute("/_authenticated/my-account/bookings/$bookingId")({
-  component: BookingDetailPage,
-  head: () => ({
-    meta: [
-      { title: "Booking details | Ram Adventure" },
-      { name: "description", content: "Full details of your Ram Adventure booking." },
-      { property: "og:title", content: "Booking details | Ram Adventure" },
-      { property: "og:description", content: "Your trip, pickup and payment details." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
-});
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -35,20 +19,29 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function BookingDetailPage() {
-  const { bookingId } = Route.useParams();
-  const fetchBooking = useServerFn(getMyBooking);
-  const query = useQuery({
-    queryKey: ["my-booking", bookingId],
-    queryFn: () => fetchBooking({ data: { bookingId } }),
-  });
+export default function BookingDetailPage() {
+  const { bookingId } = useParams<{ bookingId: string }>();
+  const [b, setB] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const b = query.data as any;
+  useEffect(() => {
+    document.title = "Booking details | Ram Adventure";
+    if (bookingId) {
+      getMyBooking({ bookingId })
+        .then((res) => {
+          setB(res);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [bookingId]);
 
   return (
     <SiteShell>
       <section className="mx-auto max-w-3xl px-6 pt-32 pb-24">
-        {query.isLoading ? (
+        {loading ? (
           <Skeleton className="h-96 w-full" />
         ) : !b ? (
           <div className="rounded-sm border border-white/10 bg-forest-deep/40 p-10 text-center">
@@ -58,61 +51,56 @@ function BookingDetailPage() {
             </Link>
           </div>
         ) : (
-          <>
-            <div className="relative overflow-hidden rounded-sm border border-white/10">
-              <img
-                src={resolveTourImage(b.tours?.images?.[0])}
-                alt={b.tours?.title ?? "Tour"}
-                className="h-56 w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-transparent" />
-              <div className="absolute bottom-5 left-6 flex items-center gap-4">
-                <BrandLogo size={54} />
-                <div>
-                  <p className="text-[0.6rem] tracking-[0.24em] text-sand uppercase">
-                    {b.booking_id}
-                  </p>
-                  <p className="font-display text-3xl text-mist">{b.tours?.title}</p>
+          <div className="space-y-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="eyebrow">{b.booking_id}</p>
+                <h1 className="mt-1 font-display text-4xl text-mist">{b.tours?.title}</h1>
+              </div>
+              <div className="flex gap-2">
+                <StatusBadge value={b.payment_status} kind="payment" />
+                <StatusBadge value={b.booking_status} />
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-sm border border-white/10 bg-forest-deep/50">
+              {b.tours?.images?.[0] && (
+                <img
+                  src={resolveTourImage(b.tours.images[0])}
+                  alt={b.tours?.title ?? "Tour"}
+                  className="h-64 w-full object-cover"
+                />
+              )}
+              <dl className="p-6 text-sm">
+                <Row label="Booking Reference" value={b.booking_id} />
+                <Row label="Customer Name" value={b.customer_name} />
+                <Row label="Email" value={b.customer_email} />
+                <Row label="Phone" value={b.customer_phone || "—"} />
+                <Row label="Date" value={b.booking_date} />
+                <Row label="Time Slot" value={b.time_slot} />
+                <Row label="Guests" value={String(b.guests)} />
+                <Row label="Vehicle" value={b.vehicle} />
+                <Row label="Pickup Location" value={b.pickup_location} />
+                <div className="flex justify-between gap-6 pt-4 font-display text-2xl text-sand">
+                  <dt>Total Amount</dt>
+                  <dd>{inr(b.total_amount)}</dd>
                 </div>
-              </div>
+              </dl>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              <StatusBadge value={b.payment_status} kind="payment" />
-              <StatusBadge value={b.booking_status} />
-            </div>
-
-            <dl className="mt-8 text-sm">
-              <Row label="Adventure" value={b.tours?.title ?? "-"} />
-              <Row label="Location" value={b.tours?.location ?? "Munnar, Kerala"} />
-              <Row label="Duration" value={b.tours?.duration ?? "-"} />
-              <Row label="Date" value={b.booking_date} />
-              <Row label="Time" value={b.time_slot} />
-              <Row label="Guests" value={String(b.guests)} />
-              <Row label="Vehicle" value={b.vehicle || b.tours?.vehicle || "-"} />
-              <Row label="Pickup" value={b.pickup_location || "-"} />
-              <Row label="Special request" value={b.special_request || "-"} />
-              <Row label="Guest name" value={b.customer_name} />
-              <Row label="Email" value={b.customer_email} />
-              <Row label="Phone" value={b.customer_phone || "-"} />
-              <Row label="Booked on" value={new Date(b.created_at).toLocaleString()} />
-              <div className="flex justify-between gap-6 py-4">
-                <dt className="text-mist/55">Amount</dt>
-                <dd className="font-display text-3xl text-sand">
-                  {b.total_amount ? inr(b.total_amount) : "Quote on call"}
-                </dd>
-              </div>
-            </dl>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              <button type="button" className={btnSmall} onClick={() => downloadBookingSlip(b)}>
-                Download booking
+            <div className="flex flex-wrap gap-4">
+              <button
+                type="button"
+                onClick={() => downloadBookingSlip(b)}
+                className={`${btnSmall} bg-sand text-forest-deep hover:bg-mist`}
+              >
+                Download Slip
               </button>
-              <Link to="/my-account/bookings" className={btnSmall}>
-                All bookings
+              <Link to="/my-account/bookings" className={btnGhost}>
+                Back to my bookings
               </Link>
             </div>
-          </>
+          </div>
         )}
       </section>
     </SiteShell>

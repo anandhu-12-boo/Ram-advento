@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
 import { forestPoster, forestVideo, valleyImage } from "@/lib/media";
 import { stats } from "@/lib/site-data";

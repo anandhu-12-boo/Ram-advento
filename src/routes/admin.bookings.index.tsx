@@ -1,19 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminLayout, adminCard, adminLabel } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { listAdminBookings, updateBookingStatus } from "@/lib/admin.functions";
 import { inr } from "@/lib/ui";
-
-export const Route = createFileRoute("/admin/bookings/")({
-  component: AdminBookings,
-  head: () => ({
-    meta: [{ title: "Bookings | Admin | Ram Adventure" }, { name: "robots", content: "noindex" }],
-  }),
-});
 
 const transitions: Record<string, string[]> = {
   pending: ["confirmed", "cancelled"],
@@ -23,120 +15,130 @@ const transitions: Record<string, string[]> = {
   cancelled: [],
 };
 
-function AdminBookings() {
-  const fetchBookings = useServerFn(listAdminBookings);
-  const mutateStatus = useServerFn(updateBookingStatus);
-  const queryClient = useQueryClient();
-  const bookings = useQuery({ queryKey: ["admin-bookings"], queryFn: () => fetchBookings() });
-  const status = useMutation({
-    mutationFn: (input: { bookingId: string; bookingStatus: string }) => mutateStatus(input),
-    onSuccess: async () => {
+export default function AdminBookingsPage() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      let data = await listAdminBookings();
+      try {
+        const localRaw = localStorage.getItem("my_bookings");
+        if (localRaw) {
+          const localBookings = JSON.parse(localRaw);
+          if (Array.isArray(localBookings) && localBookings.length > 0) {
+            const rowIds = new Set(data.map((b: any) => b.booking_id));
+            const newFromLocal = localBookings.filter((b: any) => !rowIds.has(b.booking_id));
+            data = [...newFromLocal, ...data];
+          }
+        }
+      } catch (err) {
+        console.warn("Notice: Local booking merge in admin panel skipped.", err);
+      }
+      setRows(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    document.title = "Bookings | Admin | Ram Adventure";
+    loadData();
+  }, []);
+
+  const handleStatusChange = async (bookingId: string, bookingStatus: string) => {
+    try {
+      await updateBookingStatus({ bookingId, bookingStatus });
       toast.success("Booking status updated successfully.");
-      await queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-overview"] });
-    },
-    onError: (error: Error) => toast.error(error.message || "Could not update booking status."),
-  });
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message || "Could not update booking status.");
+    }
+  };
 
   return (
     <AdminLayout>
-      <div>
-        <p className="eyebrow">Operations / reservations</p>
-        <h1 className="mt-2 font-display text-[clamp(2.2rem,5vw,4rem)] text-mist">Bookings.</h1>
-        <p className="mt-2 text-sm text-mist/60">
-          Every status change is validated and persisted server-side before this list refreshes.
-        </p>
-      </div>
-      <div className={`${adminCard} mt-10 overflow-hidden p-0`}>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
-            <thead className="border-b border-white/10 bg-black/10">
-              <tr>
-                {[
-                  "Booking",
-                  "Customer",
-                  "Tour",
-                  "Date",
-                  "Guests",
-                  "Amount",
-                  "Payment",
-                  "Status",
-                  "Action",
-                ].map((heading) => (
-                  <th key={heading} className={`${adminLabel} px-5 py-4`}>
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {(bookings.data ?? []).map((booking: any) => {
-                const options = transitions[booking.booking_status] ?? [];
-                return (
-                  <tr key={booking.id} className="align-top">
-                    <td className="px-5 py-4">
-                      <Link
-                        to="/admin/bookings/$bookingId"
-                        params={{ bookingId: booking.booking_id }}
-                        className="font-semibold text-sand hover:text-mist"
-                      >
-                        {booking.booking_id}
-                      </Link>
-                      <p className="mt-1 text-xs text-mist/45">
-                        {new Date(booking.created_at).toLocaleDateString("en-IN")}
-                      </p>
-                    </td>
-                    <td className="px-5 py-4 text-mist">
-                      {booking.customer_name}
-                      <p className="text-xs text-mist/45">{booking.customer_email}</p>
-                    </td>
-                    <td className="px-5 py-4 text-mist/75">{booking.tours?.title ?? "—"}</td>
-                    <td className="px-5 py-4 text-mist/75">
-                      {booking.booking_date}
-                      <p className="text-xs text-mist/45">{booking.time_slot}</p>
-                    </td>
-                    <td className="px-5 py-4 text-mist/75">{booking.guests}</td>
-                    <td className="px-5 py-4 text-sand">{inr(booking.total_amount ?? 0)}</td>
-                    <td className="px-5 py-4">
-                      <StatusBadge value={booking.payment_status} kind="payment" />
-                    </td>
-                    <td className="px-5 py-4">
-                      <StatusBadge value={booking.booking_status} />
-                    </td>
-                    <td className="px-5 py-4">
-                      {options.length ? (
-                        <select
-                          aria-label={`Update ${booking.booking_id}`}
-                          value=""
-                          disabled={status.isPending}
-                          onChange={(e) => {
-                            if (e.target.value)
-                              status.mutate({
-                                bookingId: booking.booking_id,
-                                bookingStatus: e.target.value,
-                              });
-                          }}
-                          className="rounded-sm border border-white/15 bg-ink px-2 py-2 text-xs text-mist"
-                        >
-                          <option value="">Update</option>
-                          {options.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="text-xs text-mist/35">Final</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Operations / Bookings</p>
+          <h1 className="mt-2 font-display text-[clamp(2.2rem,5vw,4rem)] text-mist">
+            Bookings desk.
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-mist/60">
+            Monitor, confirm, reschedule and complete customer adventure reservations.
+          </p>
         </div>
-        {!bookings.isLoading && !(bookings.data ?? []).length && (
-          <p className="p-8 text-center text-sm text-mist/55">No bookings yet.</p>
+      </div>
+
+      <div className="mt-10 overflow-hidden rounded-sm border border-white/10 bg-forest-deep/50">
+        {loading ? (
+          <p className="p-8 text-center text-sm text-mist/60">Loading bookings…</p>
+        ) : rows.length === 0 ? (
+          <p className="p-8 text-center text-sm text-mist/60">No bookings found.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left text-sm">
+              <thead className="border-b border-white/10 bg-forest-deep/80">
+                <tr>
+                  <th className={`${adminLabel} px-5 py-4`}>Booking ID</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Customer</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Tour</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Date & Time</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Guests</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Amount</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Status</th>
+                  <th className={`${adminLabel} px-5 py-4`}>Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {rows.map((b: any) => {
+                  const allowed = transitions[b.booking_status] ?? [];
+                  return (
+                    <tr key={b.id} className="text-mist/75 hover:bg-white/5">
+                      <td className="px-5 py-4 font-mono text-xs font-bold text-sand">
+                        <Link to={`/admin/bookings/${b.booking_id}`} className="hover:underline">
+                          {b.booking_id}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="font-semibold text-mist">{b.customer_name}</p>
+                        <p className="text-xs text-mist/50">{b.customer_email}</p>
+                      </td>
+                      <td className="px-5 py-4 text-mist">{b.tours?.title ?? "—"}</td>
+                      <td className="px-5 py-4">
+                        <p>{b.booking_date}</p>
+                        <p className="text-xs text-mist/50">{b.time_slot}</p>
+                      </td>
+                      <td className="px-5 py-4">{b.guests}</td>
+                      <td className="px-5 py-4 font-semibold text-sand">
+                        {inr(b.total_amount ?? 0)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusBadge value={b.booking_status} />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {allowed.map((nextStatus) => (
+                            <button
+                              key={nextStatus}
+                              type="button"
+                              onClick={() => handleStatusChange(b.booking_id, nextStatus)}
+                              className="rounded-sm border border-white/15 px-2.5 py-1 text-[0.65rem] font-bold tracking-widest text-mist uppercase transition-colors hover:border-sand hover:text-sand"
+                            >
+                              Mark {nextStatus}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </AdminLayout>

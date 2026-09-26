@@ -1,11 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AdminResourcePage } from "@/components/admin/AdminResourcePage";
-export const Route = createFileRoute("/admin/customers")({
-  component: () => (
+
+export default function AdminCustomersPage() {
+  useEffect(() => {
+    document.title = "Customers | Admin | Ram Adventure";
+  }, []);
+
+  return (
     <AdminResourcePage
       resource="customers"
       title="Customers"
-      description="Review customer accounts and their persisted booking history without exposing passwords."
+      description="View registered accounts, booking history and total customer spend."
     />
-  ),
-});
+  );
+}

@@ -1,30 +1,20 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthCard, authField, authLabel } from "@/components/auth/AuthCard";
 import { supabase } from "@/integrations/supabase/client";
 import { btnPrimary } from "@/lib/ui";
 
-export const Route = createFileRoute("/reset-password")({
-  component: ResetPasswordPage,
-  head: () => ({
-    meta: [
-      { title: "Set a new password | Ram Adventure" },
-      { name: "description", content: "Choose a new password for your Ram Adventure account." },
-      { property: "og:title", content: "Set a new password | Ram Adventure" },
-      { property: "og:description", content: "Finish resetting your account password." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-});
-
-function ResetPasswordPage() {
+export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "Set a new password | Ram Adventure";
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +35,7 @@ function ResetPasswordPage() {
       return;
     }
     toast.success("Password updated.");
-    navigate({ to: "/my-account", replace: true });
+    navigate("/my-account", { replace: true });
   };
 
   return (

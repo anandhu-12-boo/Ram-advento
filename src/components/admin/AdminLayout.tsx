@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -10,6 +9,7 @@ import {
   MessageSquare,
   Mail,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { useEffect } from "react";
 import { SiteShell } from "@/components/SiteShell";
@@ -26,16 +26,16 @@ const links = [
   ["Revenue", "/admin/revenue", BarChart3],
   ["Reviews", "/admin/reviews", MessageSquare],
   ["Enquiries", "/admin/enquiries", Mail],
+  ["Settings", "/admin/settings", KeyRound],
 ] as const;
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { loading, isAdmin, displayName } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!loading && !isAdmin) {
-      void navigate({ to: "/login", search: { redirect: "/admin" }, replace: true });
+      navigate("/login?redirect=/admin", { replace: true });
     }
   }, [isAdmin, loading, navigate]);
 
@@ -54,10 +54,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    await queryClient.cancelQueries();
-    queryClient.clear();
+    localStorage.removeItem("admin_session");
+    localStorage.removeItem("user_session");
     await supabase.auth.signOut();
-    await navigate({ to: "/login", replace: true });
+    navigate("/login", { replace: true });
   };
 
   return (

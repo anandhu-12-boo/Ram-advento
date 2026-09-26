@@ -1,28 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { CalendarCheck, CheckCircle2, Clock3, DollarSign, Map, Users, XCircle } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { AdminLayout, adminCard, adminLabel } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getAdminOverview } from "@/lib/admin.functions";
 import { inr } from "@/lib/ui";
 
-export const Route = createFileRoute("/admin/")({
-  component: AdminDashboard,
-  head: () => ({
-    meta: [{ title: "Admin dashboard | Ram Adventure" }, { name: "robots", content: "noindex" }],
-  }),
-});
+export default function AdminDashboard() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-function AdminDashboard() {
-  const fetchOverview = useServerFn(getAdminOverview);
-  const overview = useQuery({
-    queryKey: ["admin-overview"],
-    queryFn: () => fetchOverview(),
-    staleTime: 15_000,
-  });
-  const stats = overview.data?.stats;
+  useEffect(() => {
+    document.title = "Admin dashboard | Ram Adventure";
+    getAdminOverview()
+      .then((res) => {
+        setData(res);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Notice: error loading admin overview:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const stats = data?.stats;
   const cards = [
     ["Total bookings", stats?.totalBookings ?? 0, CalendarCheck],
     ["Today's bookings", stats?.todayBookings ?? 0, Clock3],
@@ -54,12 +56,6 @@ function AdminDashboard() {
           Review bookings
         </Link>
       </div>
-
-      {overview.isError && (
-        <p className="mt-8 rounded-sm border border-red-300/20 bg-red-950/30 p-4 text-sm text-red-100">
-          We could not load the admin data. Please refresh or sign in again.
-        </p>
-      )}
       <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map(([label, value, Icon]) => (
           <div key={label} className={adminCard}>
@@ -68,7 +64,7 @@ function AdminDashboard() {
               <Icon size={17} className="text-sand" />
             </div>
             <p className="mt-4 font-display text-3xl text-mist">
-              {overview.isLoading ? "—" : value}
+              {loading ? "—" : value}
             </p>
           </div>
         ))}
@@ -89,7 +85,7 @@ function AdminDashboard() {
             </Link>
           </div>
           <div className="mt-6 divide-y divide-white/10">
-            {(overview.data?.recent ?? []).map((booking: any) => (
+            {(data?.recent ?? []).map((booking: any) => (
               <div
                 key={booking.id}
                 className="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
@@ -111,7 +107,7 @@ function AdminDashboard() {
                 </div>
               </div>
             ))}
-            {!overview.isLoading && !(overview.data?.recent ?? []).length && (
+            {!loading && !(data?.recent ?? []).length && (
               <p className="py-6 text-sm text-mist/55">No bookings have arrived yet.</p>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SiteShell } from "@/components/SiteShell";

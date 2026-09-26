@@ -1,39 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { SiteShell } from "@/components/SiteShell";
 import { galleryCategories, galleryItems } from "@/lib/site-data";
 import { forestPoster } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/gallery")({
-  component: GalleryPage,
-  head: () => ({
-    meta: [
-      { title: "Munnar Photo Gallery | Ram Adventure" },
-      {
-        name: "description",
-        content:
-          "Photographs from Ram Adventure jeep safaris — Munnar mountains, tea plantations, off-road trails and traveller experiences.",
-      },
-      { property: "og:title", content: "Munnar Photo Gallery | Ram Adventure" },
-      {
-        property: "og:description",
-        content: "Frames from the Munnar high range: safaris, tea estates, mist and mountains.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/gallery" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/gallery" }],
-  }),
-});
-
-function GalleryPage() {
+export default function GalleryPage() {
   const [active, setActive] = useState<string>("All");
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  useEffect(() => {
+    document.title = "Munnar Photo Gallery | Ram Adventure";
+  }, []);
 
   const items = galleryItems.filter((i) => active === "All" || i.category === active);
 

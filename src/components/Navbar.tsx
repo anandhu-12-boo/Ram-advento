@@ -1,7 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,7 +13,7 @@ const links = [
   { label: "Home", to: "/" },
   { label: "Jeep Safari", to: "/safari" },
   { label: "Tours", to: "/tours" },
-  { label: "Packages", to: "/tours", hash: "packages" },
+  { label: "Packages", to: "/tours#packages" },
   { label: "Gallery", to: "/gallery" },
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
@@ -23,13 +22,10 @@ const links = [
 function AccountLinks({ stacked = false }: { stacked?: boolean }) {
   const { user, isAdmin, displayName } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const signOut = async () => {
-    await queryClient.cancelQueries();
-    queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
+    navigate("/login", { replace: true });
   };
 
   const cls = stacked
@@ -69,7 +65,7 @@ function AccountLinks({ stacked = false }: { stacked?: boolean }) {
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -78,7 +74,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => setOpen(false), [location.pathname]);
 
   return (
     <header
@@ -109,7 +105,6 @@ export function Navbar() {
             <li key={l.label}>
               <Link
                 to={l.to}
-                {...("hash" in l && l.hash ? { hash: l.hash } : {})}
                 className="relative text-[0.78rem] font-semibold tracking-[0.16em] text-mist/80 uppercase transition-colors hover:text-sand after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-sand after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100"
               >
                 {l.label}
@@ -153,7 +148,6 @@ export function Navbar() {
                 <li key={l.label}>
                   <Link
                     to={l.to}
-                    {...("hash" in l && l.hash ? { hash: l.hash } : {})}
                     className="block border-b border-white/5 py-3 font-display text-2xl text-mist"
                   >
                     {l.label}

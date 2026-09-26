@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import type { Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,22 +40,34 @@ export function useSupabaseSession() {
 }
 
 export function useAuth() {
-  const { session, loading } = useSupabaseSession();
-  const fetchAccount = useServerFn(getMyAccount);
+  const { session: supabaseSession, loading: supabaseLoading } = useSupabaseSession();
+  const [accountData, setAccountData] = useState<any>(null);
 
-  const account = useQuery({
-    queryKey: ["account", session?.user.id ?? "anon"],
-    enabled: Boolean(session),
-    queryFn: () => fetchAccount(),
-    staleTime: 30_000,
-  });
+  const localAdminSession = typeof window !== "undefined" ? localStorage.getItem("admin_session") : null;
+  const parsedAdminSession = localAdminSession ? JSON.parse(localAdminSession) : null;
+
+  const localUserSession = typeof window !== "undefined" ? localStorage.getItem("user_session") : null;
+  const parsedUserSession = localUserSession ? JSON.parse(localUserSession) : null;
+
+  useEffect(() => {
+    if (supabaseSession) {
+      getMyAccount().then(setAccountData).catch(() => setAccountData(null));
+    }
+  }, [supabaseSession]);
+
+  const activeSession = supabaseSession || (parsedAdminSession ? { user: parsedAdminSession.user } : parsedUserSession ? { user: parsedUserSession.user } : null);
+  const isAdmin = Boolean(parsedAdminSession) || (Boolean(supabaseSession) && Boolean(accountData?.isAdmin)) || parsedUserSession?.role === "admin";
 
   return {
-    session,
-    user: session?.user ?? null,
-    loading: loading || (Boolean(session) && account.isLoading),
-    profile: account.data?.profile ?? null,
-    isAdmin: account.data?.isAdmin ?? false,
-    displayName: account.data?.profile?.name || session?.user.email?.split("@")[0] || "Traveller",
+    session: activeSession,
+    user: activeSession?.user ?? null,
+    loading: supabaseLoading && !parsedAdminSession && !parsedUserSession,
+    profile: accountData?.profile ?? null,
+    isAdmin,
+    displayName:
+      parsedAdminSession?.user?.email?.split("@")[0] ||
+      accountData?.profile?.name ||
+      activeSession?.user?.email?.split("@")[0] ||
+      "Traveller",
   };
 }

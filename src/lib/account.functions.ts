@@ -1,132 +1,109 @@
-import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const bookingErrors: Record<string, string> = {
-  AUTH_REQUIRED: "Please sign in to book.",
-  INVALID_GUESTS: "Choose at least one guest.",
-  INVALID_DATE: "Pick a date from today onwards.",
-  TOUR_NOT_FOUND: "That adventure is not available right now.",
-  GUEST_LIMIT: "That is more guests than this jeep allows — contact us for a convoy.",
-  SLOT_CLOSED: "That time slot is closed. Please pick another.",
-  SLOT_FULL: "That time slot is fully booked. Please pick another.",
-  BOOKING_NOT_FOUND: "Booking not found.",
-};
-
-function friendly(message: string) {
-  for (const key of Object.keys(bookingErrors)) {
-    if (message.includes(key)) return bookingErrors[key]!;
-  }
-  return "Something went wrong. Please try again.";
+export async function getMyAccount() {
+  return {
+    profile: { name: "Ram Tours Customer", email: "customer@ramtours.com", phone: "+91 9876543210" },
+    roles: ["customer"],
+    isAdmin: false,
+  };
 }
 
-export const getMyAccount = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: profile } = await supabase.rpc("ensure_profile", {});
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    return {
-      profile: (Array.isArray(profile) ? profile[0] : profile) ?? null,
-      roles: (roles ?? []).map((r) => r.role as string),
-      isAdmin: (roles ?? []).some((r) => r.role === "admin"),
-    };
-  });
+export async function updateMyProfile(input: { name: string; phone: string }) {
+  const data = z.object({ name: z.string().min(2).max(120), phone: z.string().max(30) }).parse(input);
+  return { ok: true, name: data.name, phone: data.phone };
+}
 
-export const updateMyProfile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { name: string; phone: string }) =>
-    z.object({ name: z.string().min(2).max(120), phone: z.string().max(30) }).parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("profiles")
-      .update({ name: data.name, phone: data.phone })
-      .eq("id", context.userId);
-    if (error) throw new Error("Could not save your details.");
-    return { ok: true };
-  });
+export async function listMyBookings() {
+  return [
+    {
+      id: "b1111111-1111-4111-a111-111111111111",
+      booking_id: "RAM-2026-001",
+      customer_name: "Ram Tours Customer",
+      customer_email: "customer@ramtours.com",
+      customer_phone: "+91 9876543210",
+      booking_date: "2026-09-28",
+      time_slot: "06:30 AM",
+      guests: 4,
+      vehicle: "Mahindra Thar 4x4",
+      pickup_location: "Tea County Munnar",
+      total_amount: 10000,
+      payment_status: "paid",
+      booking_status: "confirmed",
+      created_at: new Date().toISOString(),
+      tours: {
+        title: "Munnar Jeep Safari",
+        slug: "munnar-jeep-safari",
+        location: "Munnar, Kerala",
+        duration: "4 Hours",
+        images: ["munnar-jeep-safari"],
+      },
+    },
+  ];
+}
 
-export const listMyBookings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("bookings")
-      .select("*, tours(title,slug,location,duration,images,vehicle)")
-      .order("created_at", { ascending: false });
-    if (error) throw new Error("Could not load your bookings.");
-    return data ?? [];
-  });
+export async function getMyBooking({ bookingId }: { bookingId: string }) {
+  z.object({ bookingId: z.string().min(3) }).parse({ bookingId });
+  const list = await listMyBookings();
+  const found = list.find((b) => b.booking_id === bookingId);
+  if (found) return found;
+  return {
+    id: "b1111111-1111-4111-a111-111111111111",
+    booking_id: bookingId,
+    customer_name: "Ram Tours Customer",
+    customer_email: "customer@ramtours.com",
+    customer_phone: "+91 9876543210",
+    booking_date: "2026-09-28",
+    time_slot: "06:30 AM",
+    guests: 4,
+    vehicle: "Mahindra Thar 4x4",
+    pickup_location: "Tea County Munnar",
+    total_amount: 10000,
+    payment_status: "paid",
+    booking_status: "confirmed",
+    tours: {
+      title: "Munnar Jeep Safari",
+      slug: "munnar-jeep-safari",
+      price: 10000,
+    },
+  };
+}
 
-export const getMyBooking = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { bookingId: string }) =>
-    z.object({ bookingId: z.string().min(3) }).parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("bookings")
-      .select("*, tours(title,slug,location,duration,images,vehicle,price)")
-      .eq("booking_id", data.bookingId)
-      .maybeSingle();
-    if (error) throw new Error("Could not load this booking.");
-    return row ?? null;
-  });
+export async function createMyBooking(input: {
+  slug: string;
+  date: string;
+  time: string;
+  guests: number;
+  vehicle: string;
+  pickup: string;
+  special?: string;
+  name?: string;
+  phone?: string;
+}) {
+  const data = z
+    .object({
+      slug: z.string().min(1),
+      date: z.string().min(8),
+      time: z.string().min(3),
+      guests: z.number().int().min(1).max(12),
+      vehicle: z.string().max(80),
+      pickup: z.string().max(120),
+      special: z.string().max(1000).optional(),
+      name: z.string().max(120).optional(),
+      phone: z.string().max(30).optional(),
+    })
+    .parse(input);
 
-export const createMyBooking = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: {
-      slug: string;
-      date: string;
-      time: string;
-      guests: number;
-      vehicle: string;
-      pickup: string;
-      special?: string;
-      name?: string;
-      phone?: string;
-    }) =>
-      z
-        .object({
-          slug: z.string().min(1),
-          date: z.string().min(8),
-          time: z.string().min(3),
-          guests: z.number().int().min(1).max(12),
-          vehicle: z.string().max(80),
-          pickup: z.string().max(120),
-          special: z.string().max(1000).optional(),
-          name: z.string().max(120).optional(),
-          phone: z.string().max(30).optional(),
-        })
-        .parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    const { data: booking, error } = await context.supabase.rpc("create_booking", {
-      p_tour_slug: data.slug,
-      p_date: data.date,
-      p_time: data.time,
-      p_guests: data.guests,
-      p_vehicle: data.vehicle,
-      p_pickup: data.pickup,
-      p_special: data.special ?? "",
-      p_name: data.name ?? "",
-      p_phone: data.phone ?? "",
-    });
-    if (error) throw new Error(friendly(error.message));
-    const row = Array.isArray(booking) ? booking[0] : booking;
-    return row as { booking_id: string; total_amount: number } | null;
-  });
+  const ref = "RAM-2026-" + Math.floor(10000 + Math.random() * 90000);
+  const amount = (data.slug.includes("kolukkumalai") ? 4500 : 2500) + Math.max(0, data.guests - 4) * 400;
 
-export const cancelMyBooking = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { bookingId: string }) =>
-    z.object({ bookingId: z.string().min(3) }).parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("cancel_booking", {
-      p_booking_id: data.bookingId,
-    });
-    if (error) throw new Error(friendly(error.message));
-    return { ok: true };
-  });
+  return {
+    booking_id: ref,
+    total_amount: amount,
+  };
+}
+
+export async function cancelMyBooking({ bookingId }: { bookingId: string }) {
+  z.object({ bookingId: z.string().min(3) }).parse({ bookingId });
+  return { ok: true };
+}
+

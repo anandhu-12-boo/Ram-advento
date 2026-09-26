@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { PageHero } from "@/components/PageHero";
 import { SiteShell } from "@/components/SiteShell";
 import { AboutMunnar } from "@/components/home/AboutMunnar";
@@ -7,30 +7,11 @@ import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { FinalCta } from "@/components/home/FinalCta";
 import { valleyImage } from "@/lib/media";
 
-export const Route = createFileRoute("/about")({
-  component: AboutPage,
-  head: () => ({
-    meta: [
-      { title: "About Ram Adventure | Munnar Jeep Safari Team" },
-      {
-        name: "description",
-        content:
-          "Ram Adventure is a Munnar jeep safari company run by local drivers with over ten years on the high range trails of Kerala.",
-      },
-      { property: "og:title", content: "About Ram Adventure | Munnar Jeep Safari Team" },
-      {
-        property: "og:description",
-        content: "Local drivers, adventure-ready jeeps and ten years of Munnar trails.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "/about" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "/about" }],
-  }),
-});
+export default function AboutPage() {
+  useEffect(() => {
+    document.title = "About Ram Adventure | Munnar Jeep Safari Team";
+  }, []);
 
-function AboutPage() {
   return (
     <SiteShell>
       <PageHero

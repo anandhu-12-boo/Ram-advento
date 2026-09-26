@@ -1,11 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AdminResourcePage } from "@/components/admin/AdminResourcePage";
-export const Route = createFileRoute("/admin/availability")({
-  component: () => (
+
+export default function AdminAvailabilityPage() {
+  useEffect(() => {
+    document.title = "Availability | Admin | Ram Adventure";
+  }, []);
+
+  return (
     <AdminResourcePage
       resource="availability"
       title="Availability"
-      description="Monitor slot capacity and prevent overbooking across the connected booking inventory."
+      description="Manage daily slot availability across your jeep safari routes."
     />
-  ),
-});
+  );
+}
