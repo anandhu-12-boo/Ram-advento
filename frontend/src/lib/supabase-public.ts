@@ -6,8 +6,9 @@ import type { Database } from "@/integrations/supabase/types";
  * Must only be called inside a server function handler / server route handler.
  */
 export function createPublicServerClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  const url = process.env["SUPABASE_URL"]!;
+  const envProcess = typeof process !== "undefined" && process?.env ? process.env : undefined;
+  const key = (envProcess?.["SUPABASE_PUBLISHABLE_KEY"] || import.meta.env?.["VITE_SUPABASE_PUBLISHABLE_KEY"] || "") as string;
+  const url = (envProcess?.["SUPABASE_URL"] || import.meta.env?.["VITE_SUPABASE_URL"] || "") as string;
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {

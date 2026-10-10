@@ -57,15 +57,14 @@ export function PackagesSection() {
                   </p>
 
                   <div className="mt-auto flex flex-wrap gap-2 pt-6">
-                    <Link to="/tours/$slug" params={{ slug: t.slug }} className={btnSmall}>
+                    <Link to={`/tours/${t.slug}`} className={btnSmall}>
                       View details
                     </Link>
-                    <Link to="/book" search={{ tour: t.slug }} className={btnSmall}>
+                    <Link to={`/book?tour=${t.slug}`} className={btnSmall}>
                       Check availability
                     </Link>
                     <Link
-                      to="/book"
-                      search={{ tour: t.slug }}
+                      to={`/book?tour=${t.slug}`}
                       className={`${btnPrimary} px-5 py-2 text-[0.68rem]`}
                     >
                       Book now

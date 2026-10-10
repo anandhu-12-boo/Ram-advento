@@ -1,13 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
 import { brandLogo, heroPoster, heroVideo } from "@/lib/media";
 
-const MIN_DURATION = 2200;
-const MAX_DURATION = 4200;
+const MIN_DURATION = 800;
+const MAX_DURATION = 1500;
 
 /** Preload the critical homepage assets, resolving on error too so we never stall. */
 function preloadAssets(): Promise<void> {
@@ -55,14 +55,15 @@ function preloadAssets(): Promise<void> {
 /**
  * Cinematic intro: dark forest screen -> logo scale-in + light sweep -> "Preparing your
  * adventure" -> jeep driving along a road line -> logo lifts toward the navbar.
- *
- * The inner animations are CSS keyframes so they run from the very first paint, before
- * React hydrates. Framer Motion only drives the exit. It always finishes within
- * MAX_DURATION, even if an asset fails to load.
  */
 export function IntroLoader({ onDone }: { onDone: () => void }) {
   const reduce = useReducedMotion();
   const [visible, setVisible] = useState(true);
+  const onDoneRef = useRef(onDone);
+
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  }, [onDone]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -74,11 +75,11 @@ export function IntroLoader({ onDone }: { onDone: () => void }) {
       if (finished) return;
       finished = true;
       setVisible(false);
-      onDone();
+      onDoneRef.current();
     };
 
     if (reduce) {
-      const quick = window.setTimeout(finish, 600);
+      const quick = window.setTimeout(finish, 200);
       return () => window.clearTimeout(quick);
     }
 
@@ -95,7 +96,7 @@ export function IntroLoader({ onDone }: { onDone: () => void }) {
       window.clearTimeout(failsafe);
       if (minTimer) window.clearTimeout(minTimer);
     };
-  }, [onDone, reduce]);
+  }, [reduce]);
 
   return (
     <AnimatePresence>

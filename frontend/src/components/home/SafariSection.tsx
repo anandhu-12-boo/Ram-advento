@@ -54,7 +54,7 @@ export function SafariSection({ limit }: { limit?: number }) {
                   </p>
                   <p className="mt-3 flex-1 text-sm text-mist/70">{d.blurb}</p>
                   <div className="mt-5">
-                    <Link to="/safari" hash={d.slug} className={btnSmall}>
+                    <Link to={`/safari#${d.slug}`} className={btnSmall}>
                       Explore
                     </Link>
                   </div>
