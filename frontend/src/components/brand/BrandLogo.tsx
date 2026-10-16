@@ -30,7 +30,7 @@ export function BrandLogo({ className, size = 48, interactive = false, priority 
     >
       <img
         src={src}
-        alt="Ram Adventure — Munnar Jeep Safari 4x4 badge"
+        alt="Ram Adventure — Jeep Safari 4x4 badge"
         width={size}
         height={size}
         loading={priority ? "eager" : "lazy"}

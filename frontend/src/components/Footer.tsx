@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { contact } from "@/lib/site-data";
+import { readSiteSettings } from "@/lib/site-data";
 
 export function Footer() {
+  const settings = readSiteSettings();
+
   return (
     <footer className="border-t border-white/10 bg-forest-deep pb-24 lg:pb-10">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
@@ -11,13 +13,13 @@ export function Footer() {
           <div className="flex items-center gap-4">
             <BrandLogo size={64} />
             <div>
-              <p className="font-display text-2xl text-mist">RAM ADVENTURE</p>
-              <p className="eyebrow">Munnar Jeep Safari & Tours</p>
+              <p className="font-display text-2xl text-mist">{settings.brandName.toUpperCase()}</p>
+              <p className="eyebrow">{settings.tagLine}</p>
             </div>
           </div>
           <p className="mt-5 max-w-sm text-sm text-mist/70">
-            Adventure begins where the road ends. Local drivers, adventure-ready jeeps and the
-            routes only Munnar's own people know.
+            Adventure begins where the road ends. Local drivers, adventure-ready jeeps and
+            memorable mountain routes built for explorers.
           </p>
         </div>
 
@@ -56,20 +58,20 @@ export function Footer() {
           <p className="eyebrow">Reach us</p>
           <ul className="mt-4 space-y-3 text-sm text-mist/75">
             <li className="flex items-start gap-2">
-              <Phone size={16} className="mt-0.5 text-sand" /> {contact.phone}
+              <Phone size={16} className="mt-0.5 text-sand" /> {settings.contact.phone}
             </li>
             <li className="flex items-start gap-2">
-              <Mail size={16} className="mt-0.5 text-sand" /> {contact.email}
+              <Mail size={16} className="mt-0.5 text-sand" /> {settings.contact.email}
             </li>
             <li className="flex items-start gap-2">
-              <MapPin size={16} className="mt-0.5 text-sand" /> {contact.address}
+              <MapPin size={16} className="mt-0.5 text-sand" /> {settings.contact.address}
             </li>
           </ul>
         </div>
       </div>
       <div className="trail-divider" />
       <p className="px-6 py-6 text-center text-xs tracking-widest text-mist/45 uppercase">
-        © {new Date().getFullYear()} Ram Adventure • Munnar, Kerala
+        © {new Date().getFullYear()} {settings.brandName} • {settings.locationLabel}
       </p>
     </footer>
   );

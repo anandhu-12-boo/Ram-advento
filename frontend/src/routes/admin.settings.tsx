@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { KeyRound, Eye, EyeOff, ShieldCheck, CheckCircle, AlertCircle, Lock } from "lucide-react";
+import { KeyRound, Eye, EyeOff, ShieldCheck, CheckCircle, AlertCircle } from "lucide-react";
 import { AdminLayout, adminCard, adminLabel, adminInput } from "@/components/admin/AdminLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { readSiteSettings, saveSiteSettings } from "@/lib/site-data";
 import { btnPrimary } from "@/lib/ui";
 
 export default function AdminSettingsPage() {
@@ -17,6 +18,7 @@ export default function AdminSettingsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [websiteSettings, setWebsiteSettings] = useState(readSiteSettings());
 
   useEffect(() => {
     document.title = "Admin Settings & Password Change | Ram Adventure";
@@ -24,6 +26,12 @@ export default function AdminSettingsPage() {
 
   const isMinLength = newPassword.length >= 8;
   const isMatch = newPassword.length > 0 && newPassword === confirmPassword;
+
+  const handleWebsiteSettingsSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveSiteSettings(websiteSettings);
+    toast.success("Website settings saved.");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +149,103 @@ export default function AdminSettingsPage() {
               Administrator
             </span>
           </div>
+        </div>
+
+        {/* Website Settings */}
+        <div className={adminCard}>
+          <div className="flex items-center gap-3 border-b border-white/10 pb-5">
+            <ShieldCheck size={20} className="text-sand" />
+            <div>
+              <h2 className="font-display text-xl text-mist">Website Settings</h2>
+              <p className="text-xs text-mist/60">Update branding, contact information and site configuration.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleWebsiteSettingsSave} className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className={adminLabel} htmlFor="brandName">Brand name</label>
+              <input
+                id="brandName"
+                value={websiteSettings.brandName}
+                onChange={(e) => setWebsiteSettings({ ...websiteSettings, brandName: e.target.value })}
+                className={adminInput}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className={adminLabel} htmlFor="tagLine">Tagline</label>
+              <input
+                id="tagLine"
+                value={websiteSettings.tagLine}
+                onChange={(e) => setWebsiteSettings({ ...websiteSettings, tagLine: e.target.value })}
+                className={adminInput}
+              />
+            </div>
+            <div>
+              <label className={adminLabel} htmlFor="phone">Phone</label>
+              <input
+                id="phone"
+                value={websiteSettings.contact.phone}
+                onChange={(e) => setWebsiteSettings({
+                  ...websiteSettings,
+                  contact: { ...websiteSettings.contact, phone: e.target.value },
+                })}
+                className={adminInput}
+              />
+            </div>
+            <div>
+              <label className={adminLabel} htmlFor="whatsapp">WhatsApp</label>
+              <input
+                id="whatsapp"
+                value={websiteSettings.contact.whatsapp}
+                onChange={(e) => setWebsiteSettings({
+                  ...websiteSettings,
+                  contact: { ...websiteSettings.contact, whatsapp: e.target.value },
+                })}
+                className={adminInput}
+              />
+            </div>
+            <div>
+              <label className={adminLabel} htmlFor="email">Business email</label>
+              <input
+                id="email"
+                value={websiteSettings.contact.email}
+                onChange={(e) => setWebsiteSettings({
+                  ...websiteSettings,
+                  contact: { ...websiteSettings.contact, email: e.target.value },
+                })}
+                className={adminInput}
+              />
+            </div>
+            <div>
+              <label className={adminLabel} htmlFor="supportEmail">Support email</label>
+              <input
+                id="supportEmail"
+                value={websiteSettings.contact.supportEmail}
+                onChange={(e) => setWebsiteSettings({
+                  ...websiteSettings,
+                  contact: { ...websiteSettings.contact, supportEmail: e.target.value },
+                })}
+                className={adminInput}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className={adminLabel} htmlFor="address">Business address</label>
+              <input
+                id="address"
+                value={websiteSettings.contact.address}
+                onChange={(e) => setWebsiteSettings({
+                  ...websiteSettings,
+                  contact: { ...websiteSettings.contact, address: e.target.value },
+                })}
+                className={adminInput}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <button type="submit" className={`${btnPrimary} w-full justify-center py-3 text-xs tracking-[0.16em] uppercase`}>
+                Save website settings
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* Password Change Form */}

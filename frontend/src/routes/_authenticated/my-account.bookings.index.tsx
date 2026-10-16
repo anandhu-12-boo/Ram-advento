@@ -133,10 +133,15 @@ export default function MyBookingsPage() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => downloadBookingSlip(b)}
+                      onClick={() => {
+                        void downloadBookingSlip(b).catch((error) => {
+                          console.error("Could not download booking ticket.", error);
+                          toast.error("Could not download booking ticket.");
+                        });
+                      }}
                       className={`${btnGhost} px-4 py-2 text-xs`}
                     >
-                      Receipt
+                      Ticket PDF
                     </button>
                     {b.booking_status !== "cancelled" && (
                       <button

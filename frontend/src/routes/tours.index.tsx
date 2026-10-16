@@ -8,7 +8,7 @@ import { heroPoster } from "@/lib/media";
 
 export default function ToursPage() {
   useEffect(() => {
-    document.title = "Munnar Tour Packages & Prices | Ram Adventure";
+    document.title = "Tour Packages & Prices | Ram Adventure";
   }, []);
 
   return (

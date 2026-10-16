@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { Download, MessageCircle, Ticket } from "lucide-react";
+import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { JeepGlyph, MountainGlyph } from "@/components/brand/JeepGlyph";
 import { SiteShell } from "@/components/SiteShell";
 import { heroPoster } from "@/lib/media";
 import { contact, tours, vehicles } from "@/lib/site-data";
+import { downloadBookingSlip } from "@/lib/booking-slip";
 import { btnGhost, btnPrimary, inr } from "@/lib/ui";
 
 export default function BookingConfirmedPage() {
@@ -17,15 +19,29 @@ export default function BookingConfirmedPage() {
     document.title = "Adventure Confirmed | Ram Adventure Munnar";
   }, []);
 
+  const bookingId = searchParams.get("id") || "RA000000";
+  const cachedBooking = (() => {
+    if (typeof window === "undefined") return undefined;
+    try {
+      const bookings = JSON.parse(window.localStorage.getItem("my_bookings") || "[]");
+      return Array.isArray(bookings)
+        ? bookings.find((booking) => booking.booking_id === bookingId)
+        : undefined;
+    } catch (error) {
+      console.warn("Could not load cached booking details for the ticket.", error);
+      return undefined;
+    }
+  })();
+
   const s = {
-    id: searchParams.get("id") || "RA000000",
+    id: bookingId,
     tour: searchParams.get("tour") || "munnar-jeep-safari",
     date: searchParams.get("date") || "",
     time: searchParams.get("time") || "",
     guests: Number(searchParams.get("guests") || "2"),
     vehicle: searchParams.get("vehicle") || "thar",
     pickup: searchParams.get("pickup") || "Munnar Town",
-    amount: Number(searchParams.get("amount") || "0"),
+    amount: Number(searchParams.get("amount") ?? cachedBooking?.total_amount ?? "0"),
   };
 
   const tour = tours.find((t) => t.slug === s.tour) ?? tours[0]!;
@@ -47,17 +63,32 @@ export default function BookingConfirmedPage() {
     `Hi Ram Adventure, my booking ${s.id} for ${tour.name} on ${s.date} is confirmed.`,
   );
 
-  const downloadBooking = () => {
-    const body = rows.map(([k, v]) => `${k}: ${v}`).join("\n");
-    const blob = new Blob([`RAM ADVENTURE — Booking confirmation\n\n${body}\n`], {
-      type: "text/plain",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ram-adventure-${s.id}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const downloadBooking = async () => {
+    try {
+      await downloadBookingSlip({
+        booking_id: s.id,
+        booking_date: s.date || "To be confirmed",
+        time_slot: s.time || "—",
+        guests: s.guests,
+        vehicle: vehicleName,
+        pickup_location: s.pickup,
+        customer_name: cachedBooking?.customer_name,
+        customer_email: cachedBooking?.customer_email,
+        customer_phone: cachedBooking?.customer_phone,
+        special_request: cachedBooking?.special_request,
+        total_amount: s.amount,
+        payment_status: cachedBooking?.payment_status ?? "pending",
+        booking_status: cachedBooking?.booking_status ?? "confirmed",
+        tours: {
+          title: tour.name,
+          location: tour.location,
+          duration: tour.duration,
+        },
+      });
+    } catch (error) {
+      console.error("Could not download booking ticket.", error);
+      toast.error("Could not download booking ticket.");
+    }
   };
 
   return (

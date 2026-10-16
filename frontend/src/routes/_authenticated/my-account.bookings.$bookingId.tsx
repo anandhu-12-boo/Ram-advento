@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase joins are runtime-shaped. */
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SiteShell } from "@/components/SiteShell";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -91,10 +92,15 @@ export default function BookingDetailPage() {
             <div className="flex flex-wrap gap-4">
               <button
                 type="button"
-                onClick={() => downloadBookingSlip(b)}
+                onClick={() => {
+                  void downloadBookingSlip(b).catch((error) => {
+                    console.error("Could not download booking ticket.", error);
+                    toast.error("Could not download booking ticket.");
+                  });
+                }}
                 className={`${btnSmall} bg-sand text-forest-deep hover:bg-mist`}
               >
-                Download Slip
+                Download Ticket PDF
               </button>
               <Link to="/my-account/bookings" className={btnGhost}>
                 Back to my bookings

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { PageHero } from "@/components/PageHero";
 import { SiteShell } from "@/components/SiteShell";
-import { contact } from "@/lib/site-data";
+import { readSiteSettings } from "@/lib/site-data";
 import { heroPoster } from "@/lib/media";
 import { btnPrimary } from "@/lib/ui";
 import { submitEnquiry } from "@/lib/tours.functions";
@@ -25,6 +25,7 @@ const field =
 const label = "text-[0.66rem] font-semibold tracking-[0.2em] text-mist/60 uppercase";
 
 export default function ContactPage() {
+  const settings = readSiteSettings();
   const {
     register,
     handleSubmit,
@@ -33,7 +34,7 @@ export default function ContactPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   useEffect(() => {
-    document.title = "Contact Ram Adventure | Munnar Jeep Safari Booking";
+    document.title = `Contact ${settings.brandName} | Jeep Safari Booking`;
   }, []);
 
   const onSubmit = async (values: FormValues) => {
@@ -119,19 +120,19 @@ export default function ContactPage() {
           <ul className="mt-6 space-y-5 text-sm text-mist/80">
             <li className="flex items-start gap-3">
               <Phone size={17} className="mt-0.5 text-sand" />
-              {contact.phone}
+              {settings.contact.phone}
             </li>
             <li className="flex items-start gap-3">
               <MessageCircle size={17} className="mt-0.5 text-sand" />
-              WhatsApp {contact.whatsapp}
+              WhatsApp {settings.contact.whatsapp}
             </li>
             <li className="flex items-start gap-3">
               <Mail size={17} className="mt-0.5 text-sand" />
-              {contact.email}
+              {settings.contact.email}
             </li>
             <li className="flex items-start gap-3">
               <MapPin size={17} className="mt-0.5 text-sand" />
-              {contact.address}
+              {settings.contact.address}
             </li>
           </ul>
           <div className="trail-divider my-7" />

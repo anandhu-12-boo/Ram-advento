@@ -18,7 +18,7 @@ export default function TourDetailPage() {
 
   useEffect(() => {
     if (tour) {
-      document.title = `${tour.name} — Munnar | Ram Adventure`;
+      document.title = `${tour.name} — ${tour.location} | Ram Adventure`;
     }
   }, [tour]);
 
@@ -56,7 +56,7 @@ export default function TourDetailPage() {
             <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
               <Users size={18} className="text-sand" />
               <p className="mt-3 text-[0.65rem] tracking-widest text-mist/50 uppercase">Group</p>
-              <p className="font-semibold text-mist">Up to {tour.guests} guests</p>
+              <p className="font-semibold text-mist">Up to {tour.maxGuests} guests</p>
             </div>
             <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-4">
               <Truck size={18} className="text-sand" />
@@ -72,7 +72,7 @@ export default function TourDetailPage() {
 
           <Reveal>
             <h2 className="font-display text-3xl text-mist">About this trail</h2>
-            <p className="mt-4 text-lg leading-relaxed text-mist/75">{tour.description}</p>
+            <p className="mt-4 text-lg leading-relaxed text-mist/75">{tour.overview}</p>
           </Reveal>
 
           <Reveal>
@@ -116,7 +116,7 @@ export default function TourDetailPage() {
             <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-6">
               <p className="font-display text-xl text-mist">Inclusions</p>
               <ul className="mt-4 space-y-2 text-sm text-mist/75">
-                {tour.inclusions.map((i) => (
+                {tour.included.map((i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check size={16} className="mt-0.5 text-sand" /> {i}
                   </li>
@@ -127,7 +127,7 @@ export default function TourDetailPage() {
             <div className="rounded-sm border border-white/10 bg-forest-deep/50 p-6">
               <p className="font-display text-xl text-mist">Exclusions</p>
               <ul className="mt-4 space-y-2 text-sm text-mist/75">
-                {tour.exclusions.map((i) => (
+                {tour.excluded.map((i) => (
                   <li key={i} className="flex items-start gap-2">
                     <X size={16} className="mt-0.5 text-mist/40" /> {i}
                   </li>
@@ -177,7 +177,7 @@ export default function TourDetailPage() {
           <Reveal>
             <h2 className="font-display text-3xl text-mist">FAQs</h2>
             <Accordion type="single" collapsible className="mt-4">
-              {tour.faqs.map((f, i) => (
+              {tour.faqs.length > 0 && tour.faqs.map((f, i) => (
                 <AccordionItem key={f.q} value={`faq-${i}`}>
                   <AccordionTrigger className="text-left text-mist">{f.q}</AccordionTrigger>
                   <AccordionContent className="text-mist/70">{f.a}</AccordionContent>

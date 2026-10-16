@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { FileSpreadsheet } from "lucide-react";
 import { AdminLayout, adminCard, adminLabel } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/StatusBadge";
+import { downloadBookingsSpreadsheet } from "@/lib/booking-export";
 import { listAdminBookings, updateBookingStatus } from "@/lib/admin.functions";
-import { inr } from "@/lib/ui";
+import { btnPrimary, inr } from "@/lib/ui";
 
 const transitions: Record<string, string[]> = {
   pending: ["confirmed", "cancelled"],
@@ -71,6 +73,23 @@ export default function AdminBookingsPage() {
             Monitor, confirm, reschedule and complete customer adventure reservations.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              downloadBookingsSpreadsheet(rows);
+              toast.success("Bookings spreadsheet downloaded.");
+            } catch (error: any) {
+              console.error("Could not export bookings spreadsheet.", error);
+              toast.error(error?.message || "Could not export bookings.");
+            }
+          }}
+          disabled={loading || rows.length === 0}
+          className={`${btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
+        >
+          <FileSpreadsheet size={16} />
+          Export Excel
+        </button>
       </div>
 
       <div className="mt-10 overflow-hidden rounded-sm border border-white/10 bg-forest-deep/50">

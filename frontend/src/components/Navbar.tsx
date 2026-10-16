@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { readSiteSettings } from "@/lib/site-data";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -66,6 +67,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const settings = readSiteSettings();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -92,10 +94,10 @@ export function Navbar() {
           <BrandLogo interactive priority size={scrolled ? 42 : 54} />
           <span className="hidden leading-none sm:block">
             <span className="font-display block text-xl tracking-wide text-mist">
-              RAM ADVENTURE
+              {settings.brandName.toUpperCase()}
             </span>
             <span className="block text-[0.6rem] font-semibold tracking-[0.28em] text-sand/80">
-              MUNNAR • KERALA
+              {settings.locationLabel.toUpperCase()}
             </span>
           </span>
         </Link>

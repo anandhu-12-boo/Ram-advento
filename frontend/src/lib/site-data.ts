@@ -127,187 +127,239 @@ export type Tour = {
   faqs: { q: string; a: string }[];
 };
 
+export type SiteSettings = {
+  brandName: string;
+  tagLine: string;
+  locationLabel: string;
+  contact: {
+    phone: string;
+    whatsapp: string;
+    email: string;
+    supportEmail: string;
+    address: string;
+    mapsUrl: string;
+  };
+  socials: {
+    instagram: string;
+    facebook: string;
+    whatsapp: string;
+  };
+  theme: {
+    primary: string;
+    accent: string;
+    background: string;
+    surface: string;
+    text: string;
+    muted: string;
+  };
+};
+
+export const defaultSiteSettings: SiteSettings = {
+  brandName: "Ram Adventure",
+  tagLine: "Jeep Safari • Mountain Trails",
+  locationLabel: "Kerala • Adventure Routes",
+  contact: {
+    phone: "+91 98470 00000",
+    whatsapp: "+91 98470 00000",
+    email: "hello@ramadventure.in",
+    supportEmail: "support@ramadventure.in",
+    address: "Kerala, India",
+    mapsUrl: "https://maps.google.com/?q=Kerala%20India",
+  },
+  socials: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    whatsapp: "https://wa.me/919847000000",
+  },
+  theme: {
+    primary: "#1f3b2d",
+    accent: "#b8634d",
+    background: "#f3efe6",
+    surface: "#111111",
+    text: "#f9f6f0",
+    muted: "#d9d1c5",
+  },
+};
+
+export function readSiteSettings(): SiteSettings {
+  if (typeof window === "undefined") {
+    return defaultSiteSettings;
+  }
+
+  try {
+    const raw = window.localStorage.getItem("site_settings");
+    if (!raw) return defaultSiteSettings;
+
+    const parsed = JSON.parse(raw) as Partial<SiteSettings>;
+    return {
+      ...defaultSiteSettings,
+      ...parsed,
+      contact: {
+        ...defaultSiteSettings.contact,
+        ...(parsed.contact ?? {}),
+      },
+      socials: {
+        ...defaultSiteSettings.socials,
+        ...(parsed.socials ?? {}),
+      },
+      theme: {
+        ...defaultSiteSettings.theme,
+        ...(parsed.theme ?? {}),
+      },
+    };
+  } catch {
+    return defaultSiteSettings;
+  }
+}
+
+export function saveSiteSettings(settings: Partial<SiteSettings>) {
+  const merged = {
+    ...readSiteSettings(),
+    ...settings,
+    contact: { ...readSiteSettings().contact, ...(settings.contact ?? {}) },
+    socials: { ...readSiteSettings().socials, ...(settings.socials ?? {}) },
+    theme: { ...readSiteSettings().theme, ...(settings.theme ?? {}) },
+  };
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("site_settings", JSON.stringify(merged));
+  }
+
+  return merged;
+}
+
+export const siteSettings = readSiteSettings();
+
 export const tours: Tour[] = [
   {
-    slug: "munnar-jeep-safari",
-    name: "Munnar Jeep Safari",
-    tagline: "The classic off-road introduction to the high range",
-    location: "Munnar, Kerala",
-    duration: "4 Hours",
-    price: 2500,
+    slug: "anakulam-jeep-safari",
+    name: "Anakulam Jeep Safari",
+    tagline: "Scenic mountain and viewpoint experience.",
+    location: "Anakulam, Kerala",
+    duration: "6 hours",
+    price: 5500,
     vehicle: "Mahindra Thar 4x4",
     maxGuests: 6,
     rating: 4.9,
-    reviews: 412,
+    reviews: 140,
     image: gaproad,
     overview:
-      "A half-day off-road run through tea estates, forest trails and viewpoints that regular cars never reach. Driven by local drivers who grew up on these trails.",
+      "Explore Anakulam, Kottapara View Point, waterfalls, tea plantations and scenic mountain destinations with Ram Adventure jeep safari tours.",
     highlights: [
-      "Off-road tea estate trails",
-      "Mist valley viewpoints",
-      "Local driver-guide with stories of the range",
-      "Tea factory stop",
+      "Scenic mountain and viewpoint experience.",
+      "Waterfall and tea plantation stops.",
+      "Tiger Cave clearly marked as optional.",
+      "A six-hour jeep safari experience.",
     ],
     itinerary: [
-      { time: "06:30", title: "Pickup", detail: "Hotel pickup anywhere in Munnar town." },
-      {
-        time: "07:15",
-        title: "Estate trails",
-        detail: "Off-road climb through working tea estates.",
-      },
-      { time: "08:30", title: "Viewpoint break", detail: "Chai on a ridge above the mist line." },
-      { time: "10:30", title: "Drop off", detail: "Return to your stay." },
+      { time: "Stop 1", title: "Kottapara View Point", detail: "Scenic mountain viewpoint." },
+      { time: "Stop 2", title: "Kainagiri Waterfalls", detail: "Waterfall stop." },
+      { time: "Stop 3", title: "Tea Plantation", detail: "Tea estate experience." },
+      { time: "Stop 4", title: "Tiger Cave", detail: "Optional stop." },
+      { time: "Stop 5", title: "33 Waterfall", detail: "Scenic waterfall circuit." },
+      { time: "Stop 6", title: "Hanging Bridge", detail: "Viewpoint stop." },
+      { time: "Stop 7", title: "Check Dam", detail: "Dam stop." },
+      { time: "Stop 8", title: "Anakulam", detail: "Final destination." },
     ],
-    included: ["4x4 jeep with driver", "Fuel and permits", "Bottled water", "Photo stops"],
-    excluded: ["Meals", "Entry tickets", "Personal expenses"],
-    pickup: "Free pickup within Munnar town limits. Outside pickups on request.",
-    gallery: [gaproad, mattupetty, heroPoster, forestPoster],
+    included: [],
+    excluded: [],
+    pickup: "Pickup details can be confirmed by the administrator.",
+    gallery: [gaproad, mattupetty, vattavada, topstation],
     faqs: [
       {
-        q: "Is it safe for children?",
-        a: "Yes. Trails are driven slowly and our jeeps are maintained weekly.",
+        q: "Is Tiger Cave optional?",
+        a: "Yes. Tiger Cave is clearly marked as an optional stop.",
       },
       {
-        q: "What if it rains?",
-        a: "Munnar rain is part of the experience. Severe weather means a free reschedule.",
+        q: "What is the trip duration?",
+        a: "This experience runs for six hours.",
       },
     ],
   },
   {
-    slug: "kolukkumalai-adventure",
-    name: "Kolukkumalai Adventure",
-    tagline: "Sunrise above the clouds at 7,900 ft",
-    location: "Kolukkumalai, Idukki",
-    duration: "8 Hours",
-    price: 4500,
+    slug: "ponmudi-jeep-safari",
+    name: "Ponmudi Jeep Safari",
+    tagline: "Waterfalls, viewpoints and flexible trip timing.",
+    location: "Ponmudi, Kerala",
+    duration: "3 hours",
+    price: 3000,
     vehicle: "Mahindra Thar 4x4",
     maxGuests: 6,
-    rating: 5.0,
-    reviews: 288,
-    image: kolukkumalai,
-    overview:
-      "A pre-dawn climb up one of India's roughest jeep tracks to the highest tea plantation in the world, timed for sunrise over a sea of clouds.",
-    highlights: [
-      "Sunrise above the cloud line",
-      "World's highest tea estate",
-      "Colonial-era tea factory visit",
-      "Sunrise point trek assistance",
-    ],
-    itinerary: [
-      { time: "03:30", title: "Pickup", detail: "Early start from your Munnar stay." },
-      {
-        time: "05:00",
-        title: "Off-road ascent",
-        detail: "The famous rocky climb to Kolukkumalai.",
-      },
-      { time: "06:15", title: "Sunrise", detail: "Watch the range emerge from the clouds." },
-      { time: "08:00", title: "Tea factory", detail: "Hand-rolled tea processing tour." },
-      { time: "11:30", title: "Drop off", detail: "Back in Munnar by late morning." },
-    ],
-    included: [
-      "4x4 jeep with driver",
-      "Sunrise point guidance",
-      "Fuel and permits",
-      "Bottled water",
-    ],
-    excluded: ["Tea factory entry", "Breakfast", "Personal expenses"],
-    pickup: "Pickup between 03:00 and 04:00 depending on your location.",
-    gallery: [kolukkumalai, topstation, heroPoster, vattavada],
-    faqs: [
-      {
-        q: "How rough is the track?",
-        a: "Genuinely rough — that is the adventure. Not advised for severe back or neck issues.",
-      },
-      {
-        q: "Will we see the sunrise every day?",
-        a: "Clear skies are most likely between December and March.",
-      },
-    ],
-  },
-  {
-    slug: "munnar-full-day-tour",
-    name: "Munnar Full Day Tour",
-    tagline: "Every viewpoint that matters, in one day",
-    location: "Munnar, Kerala",
-    duration: "8 Hours",
-    price: 3500,
-    vehicle: "Mahindra Bolero / Thar",
-    maxGuests: 7,
     rating: 4.8,
-    reviews: 531,
-    image: mattupetty,
+    reviews: 120,
+    image: topstation,
     overview:
-      "A complete sightseeing day covering Mattupetty, Echo Point, Kundala, tea museums and forest viewpoints, with off-road detours between the crowds.",
+      "Discover Ripple Waterfalls, Hanging Bridge, Ponmudi Dam, Eco Point and Nadukani View Point with Ram Adventure jeep safari tours.",
     highlights: [
-      "Mattupetty dam and Echo Point",
-      "Kundala arch dam",
-      "Tea plantation walk",
-      "Off-road sunset viewpoint",
+      "Sunrise trips available.",
+      "Sunset trips available.",
+      "Waterfalls and viewpoint circuit.",
+      "Three-hour jeep safari experience.",
     ],
     itinerary: [
-      { time: "08:30", title: "Pickup", detail: "Relaxed morning start." },
-      { time: "09:30", title: "Mattupetty & Echo Point", detail: "Lake, dam and viewpoints." },
-      { time: "12:30", title: "Lunch break", detail: "Local Kerala meal stop." },
-      { time: "14:00", title: "Kundala & Top Station", detail: "High range panoramas." },
-      { time: "17:00", title: "Drop off", detail: "Return by evening." },
+      { time: "Stop 1", title: "Ripple Waterfalls", detail: "Scenic waterfall stop." },
+      { time: "Stop 2", title: "Hanging Bridge", detail: "Bridge stop." },
+      { time: "Stop 3", title: "Ponmudi Dam", detail: "Dam stop." },
+      { time: "Stop 4", title: "Ponmudi Eco Point", detail: "Eco point stop." },
+      { time: "Stop 5", title: "Nadukani View Point", detail: "Panoramic viewpoint." },
     ],
-    included: ["Vehicle with driver", "Fuel and parking", "All viewpoint stops", "Bottled water"],
-    excluded: ["Entry tickets", "Meals", "Boating charges"],
-    pickup: "Free pickup within Munnar town limits.",
-    gallery: [mattupetty, echopoint, valleyImage, topstation],
+    included: [],
+    excluded: [],
+    pickup: "Pickup details can be confirmed by the administrator.",
+    gallery: [topstation, valleyImage, echopoint, gaproad],
     faqs: [
       {
-        q: "Can we customise the stops?",
-        a: "Yes — tell your driver in the morning and the route is adjusted.",
+        q: "Are sunrise and sunset slots available?",
+        a: "Yes, sunrise and sunset departures may be offered when the administrator configures those slots as available.",
       },
-      { q: "Is boating included?", a: "Boating tickets are paid directly at the lake." },
+      {
+        q: "How long is the trip?",
+        a: "This safari is a three-hour route.",
+      },
     ],
   },
   {
-    slug: "custom-adventure",
-    name: "Custom Adventure",
-    tagline: "Built around your days, your pace, your people",
-    location: "Munnar & Idukki high range",
-    duration: "Flexible",
-    price: 0,
-    vehicle: "Your choice of 4x4",
-    maxGuests: 12,
+    slug: "kallipara-view-point-safari",
+    name: "Kallipara View Point & Mountain Peak Safari",
+    tagline: "Mountain peak and scenic viewpoint experience.",
+    location: "Ponmudi, Kerala",
+    duration: "6 hours",
+    price: 8000,
+    vehicle: "Mahindra Thar 4x4",
+    maxGuests: 6,
     rating: 4.9,
-    reviews: 96,
-    image: experienceJeep,
+    reviews: 165,
+    image: vattavada,
     overview:
-      "Multi-day routes, honeymoon itineraries, photography trips, group convoys — tell us what you want to see and we build the trail around it.",
+      "Explore Kallipara View Point, Kallimali View Point, Ripple Waterfalls and scenic Ponmudi destinations with Ram Adventure.",
     highlights: [
-      "Any combination of routes",
-      "Multi-jeep convoys for groups",
-      "Camping and homestay coordination",
-      "Photography timing planned around light",
+      "Mountain peak and scenic viewpoint experience.",
+      "Waterfall exploration.",
+      "Multiple sightseeing stops.",
+      "Six-hour jeep safari experience.",
     ],
     itinerary: [
-      {
-        time: "Step 1",
-        title: "Tell us your dates",
-        detail: "Share your stay, dates and interests.",
-      },
-      {
-        time: "Step 2",
-        title: "We plan the route",
-        detail: "A local driver-planner maps the trails.",
-      },
-      { time: "Step 3", title: "Confirm", detail: "Pay a small advance and your jeeps are held." },
+      { time: "Stop 1", title: "Ripple Waterfalls", detail: "Waterfall stop." },
+      { time: "Stop 2", title: "Hanging Bridge", detail: "Bridge stop." },
+      { time: "Stop 3", title: "Ponmudi Dam", detail: "Dam stop." },
+      { time: "Stop 4", title: "Ponmudi Eco Point", detail: "Eco point stop." },
+      { time: "Stop 5", title: "Kallimali View Point", detail: "Scenic viewpoint." },
+      { time: "Stop 6", title: "Koothungal Waterfalls", detail: "Waterfall stop." },
+      { time: "Stop 7", title: "Marakkanm Waterfalls", detail: "Waterfall stop." },
+      { time: "Stop 8", title: "Kallipara View Point", detail: "Final scenic stop." },
     ],
-    included: ["Route planning", "Jeeps and drivers", "Permits", "24/7 support line"],
-    excluded: ["Stays and meals", "Entry tickets"],
-    pickup: "Anywhere in Munnar, Devikulam, Chinnakanal or Anachal.",
-    gallery: [experienceJeep, kolukkumalai, anayirankal, forestPoster],
+    included: [],
+    excluded: [],
+    pickup: "Pickup details can be confirmed by the administrator.",
+    gallery: [vattavada, topstation, valleyImage, gaproad],
     faqs: [
       {
-        q: "Is there a minimum group size?",
-        a: "No. We plan for couples and for groups of thirty.",
+        q: "Does this include multiple viewpoints?",
+        a: "Yes. The route includes several viewpoint and waterfall stops across the scenic Ponmudi region.",
       },
       {
-        q: "How is pricing decided?",
-        a: "Based on distance, hours and number of jeeps. Quoted before you pay.",
+        q: "What is the duration?",
+        a: "This safari lasts six hours.",
       },
     ],
   },
