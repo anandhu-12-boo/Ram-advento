@@ -2,36 +2,43 @@ import { Router, Response } from "express";
 import { z } from "zod";
 import { sendError, sendSuccess } from "../utils/response.js";
 import { requireAuth, requireAdmin, AuthenticatedRequest } from "../middleware/auth.js";
+import { connectMongoDB, MongoBooking, MongoUser, MongoTour } from "../db/mongodb.js";
 
 const router = Router();
 
 // GET /api/admin/overview - Detailed metrics & analytics overview
 router.get("/overview", requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const supabase = req.supabase!;
     const today = new Date().toISOString().slice(0, 10);
-
-    const [{ data: bookings, error: bErr }, { count: customers }, { count: tourCount }] = await Promise.all([
-      supabase
-        .from("bookings")
-        .select("id,booking_id,customer_name,customer_email,booking_date,time_slot,guests,total_amount,payment_status,booking_status,created_at,tours(title,slug)")
-        .order("created_at", { ascending: false }),
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
-      supabase.from("tours").select("id", { count: "exact", head: true }),
+    await connectMongoDB();
+    const [mongoBookings, customers, tourCount] = await Promise.all([
+      MongoBooking.find().sort({ createdAt: -1 }),
+      MongoUser.countDocuments(),
+      MongoTour.countDocuments(),
     ]);
 
-    if (bErr) {
-      return sendError(res, "Failed to load admin overview: " + bErr.message, 500);
-    }
+    const rows = mongoBookings.map((b: any) => ({
+      id: b._id.toString(),
+      booking_id: b.booking_id,
+      customer_name: b.customer_name,
+      customer_email: b.customer_email,
+      booking_date: b.booking_date,
+      time_slot: b.time_slot,
+      guests: b.guests,
+      total_amount: b.total_amount,
+      payment_status: b.payment_status,
+      booking_status: b.booking_status,
+      created_at: b.createdAt || b.created_at,
+      tours: { title: b.tour_slug || "Munnar Jeep Safari", slug: b.tour_slug || "munnar-jeep-safari" },
+    }));
 
-    const rows = bookings ?? [];
     const paid = rows.filter((b: any) => b.payment_status === "paid");
     const byStatus = (s: string) => rows.filter((b: any) => b.booking_status === s).length;
 
     const revenueSince = (days: number) => {
       const from = new Date(Date.now() - days * 86400000).toISOString();
       return paid
-        .filter((b: any) => b.created_at >= from)
+        .filter((b: any) => String(b.created_at) >= from)
         .reduce((sum: number, b: any) => sum + (b.total_amount ?? 0), 0);
     };
 
@@ -101,17 +108,19 @@ router.put("/bookings/:id/status", requireAuth, requireAdmin, async (req: Authen
     const { id } = req.params;
     const parsed = updateBookingStatusSchema.parse(req.body);
 
-    const { data, error } = await req.supabase!
-      .from("bookings")
-      .update(parsed)
-      .eq("id", id)
-      .select()
-      .single();
+    // Update booking in MongoDB
+    await connectMongoDB();
+    const updated = await MongoBooking.findOneAndUpdate(
+      { $or: [{ _id: id }, { booking_id: id }] },
+      parsed,
+      { new: true }
+    );
 
-    if (error) {
-      return sendError(res, "Failed to update booking status: " + error.message, 400);
+    if (updated) {
+      return sendSuccess(res, updated, "Booking status updated successfully.");
     }
-    return sendSuccess(res, data, "Booking status updated successfully.");
+
+    return sendError(res, "Booking not found", 404);
   } catch (err: any) {
     if (err instanceof z.ZodError) {
       return sendError(res, err.errors.map((e) => e.message).join(", "), 400);

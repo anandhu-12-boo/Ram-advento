@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../index.js";
-import { publicSupabaseClient } from "../db/supabase.js";
+import { MongoEnquiry } from "../db/mongodb.js";
 
 describe("Enquiries API (/api/enquiries)", () => {
   beforeEach(() => {
@@ -20,20 +20,14 @@ describe("Enquiries API (/api/enquiries)", () => {
 
   it("POST /api/enquiries submits contact form successfully", async () => {
     const mockCreated = {
-      id: "enq-1",
+      _id: "enq-1",
       name: "Rahul Sharma",
       email: "rahul@example.com",
       message: "Interested in safari booking",
       status: "new",
     };
 
-    vi.spyOn(publicSupabaseClient, "from").mockReturnValue({
-      insert: () => ({
-        select: () => ({
-          single: () => Promise.resolve({ data: mockCreated, error: null }),
-        }),
-      }),
-    } as any);
+    vi.spyOn(MongoEnquiry, "create").mockResolvedValue(mockCreated as any);
 
     const res = await request(app).post("/api/enquiries").send({
       name: "Rahul Sharma",
@@ -44,7 +38,7 @@ describe("Enquiries API (/api/enquiries)", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.id).toBe("enq-1");
+    expect(res.body.data._id).toBe("enq-1");
   });
 
   it("GET /api/enquiries returns 401 when unauthenticated", async () => {

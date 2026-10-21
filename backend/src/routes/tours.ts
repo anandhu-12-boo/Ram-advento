@@ -1,74 +1,36 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { publicSupabaseClient } from "../db/supabase.js";
 import { sendError, sendSuccess } from "../utils/response.js";
 import { requireAuth, requireAdmin, AuthenticatedRequest } from "../middleware/auth.js";
+import { connectMongoDB, MongoTour } from "../db/mongodb.js";
 
 const router = Router();
-
-const TOUR_COLUMNS =
-  "id,title,slug,tagline,description,category,location,duration,price,max_guests,vehicle,images,highlights,itinerary,inclusions,exclusions,pickup_locations,rating,review_count,available,featured";
-
-import { MongoTour } from "../db/mongodb.js";
 
 // GET /api/tours - List available tours with optional search/filtering
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { category, location, minPrice, maxPrice, featured, search } = req.query;
+    await connectMongoDB();
 
-    let query = publicSupabaseClient
-      .from("tours")
-      .select(TOUR_COLUMNS)
-      .eq("available", true);
-
-    if (category) {
-      query = query.eq("category", String(category));
-    }
-    if (location) {
-      query = query.ilike("location", `%${location}%`);
-    }
-    if (minPrice) {
-      const minP = Number(minPrice);
-      if (!isNaN(minP)) query = query.gte("price", minP);
-    }
-    if (maxPrice) {
-      const maxP = Number(maxPrice);
-      if (!isNaN(maxP)) query = query.lte("price", maxP);
-    }
-    if (featured !== undefined) {
-      query = query.eq("featured", featured === "true" || featured === "1");
+    const mongoFilter: any = { available: true };
+    if (category) mongoFilter.category = String(category);
+    if (featured !== undefined) mongoFilter.featured = featured === "true" || featured === "1";
+    if (location) mongoFilter.location = { $regex: String(location), $options: "i" };
+    if (minPrice || maxPrice) {
+      mongoFilter.price = {};
+      if (minPrice) mongoFilter.price.$gte = Number(minPrice);
+      if (maxPrice) mongoFilter.price.$lte = Number(maxPrice);
     }
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,tagline.ilike.%${search}%`);
+      mongoFilter.$or = [
+        { title: { $regex: String(search), $options: "i" } },
+        { description: { $regex: String(search), $options: "i" } },
+        { tagline: { $regex: String(search), $options: "i" } },
+      ];
     }
 
-    const { data, error } = await query.order("price", { ascending: true });
-
-    if (error) {
-      // Fallback to MongoDB
-      try {
-        const mongoFilter: any = { available: true };
-        if (category) mongoFilter.category = String(category);
-        if (featured !== undefined) mongoFilter.featured = featured === "true" || featured === "1";
-        if (minPrice || maxPrice) {
-          mongoFilter.price = {};
-          if (minPrice) mongoFilter.price.$gte = Number(minPrice);
-          if (maxPrice) mongoFilter.price.$lte = Number(maxPrice);
-        }
-        if (search) {
-          mongoFilter.$or = [
-            { title: { $regex: String(search), $options: "i" } },
-            { description: { $regex: String(search), $options: "i" } },
-            { tagline: { $regex: String(search), $options: "i" } },
-          ];
-        }
-        const mongoTours = await MongoTour.find(mongoFilter).sort({ price: 1 });
-        return sendSuccess(res, mongoTours);
-      } catch (mErr: any) {
-        return sendError(res, "Could not load tours: " + error.message, 500);
-      }
-    }
-    return sendSuccess(res, data || []);
+    const mongoTours = await MongoTour.find(mongoFilter).sort({ price: 1 });
+    return sendSuccess(res, mongoTours);
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -77,23 +39,18 @@ router.get("/", async (req: Request, res: Response) => {
 // GET /api/tours/:slug - Get tour by slug
 router.get("/:slug", async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
-    const { data, error } = await publicSupabaseClient
-      .from("tours")
-      .select(TOUR_COLUMNS)
-      .eq("slug", slug)
-      .maybeSingle();
+    const slug = String(req.params.slug || "");
+    await connectMongoDB();
 
-    if (error || !data) {
-      try {
-        const mongoTour = await MongoTour.findOne({ slug });
-        if (mongoTour) return sendSuccess(res, mongoTour);
-      } catch (mErr) {}
-      if (!data) {
-        return sendError(res, "Tour not found", 404);
-      }
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(slug);
+    const mongoTour = await MongoTour.findOne(
+      isMongoId ? { $or: [{ slug }, { _id: slug }] } : { slug }
+    );
+
+    if (!mongoTour) {
+      return sendError(res, "Tour not found", 404);
     }
-    return sendSuccess(res, data);
+    return sendSuccess(res, mongoTour);
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -124,16 +81,10 @@ const createTourSchema = z.object({
 router.post("/", requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parsed = createTourSchema.parse(req.body);
-    const { data, error } = await req.supabase!
-      .from("tours")
-      .insert(parsed)
-      .select()
-      .single();
+    await connectMongoDB();
 
-    if (error) {
-      return sendError(res, "Failed to create tour: " + error.message, 400);
-    }
-    return sendSuccess(res, data, "Tour created successfully", 201);
+    const tour = await MongoTour.create(parsed);
+    return sendSuccess(res, tour, "Tour created successfully", 201);
   } catch (err: any) {
     if (err instanceof z.ZodError) {
       return sendError(res, err.errors.map(e => e.message).join(", "), 400);
@@ -146,17 +97,13 @@ router.post("/", requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
 router.put("/:id", requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await req.supabase!
-      .from("tours")
-      .update(req.body)
-      .eq("id", id)
-      .select()
-      .single();
+    await connectMongoDB();
 
-    if (error) {
-      return sendError(res, "Failed to update tour: " + error.message, 400);
+    const tour = await MongoTour.findByIdAndUpdate(id, req.body, { new: true });
+    if (!tour) {
+      return sendError(res, "Tour not found", 404);
     }
-    return sendSuccess(res, data, "Tour updated successfully");
+    return sendSuccess(res, tour, "Tour updated successfully");
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -166,14 +113,9 @@ router.put("/:id", requireAuth, requireAdmin, async (req: AuthenticatedRequest, 
 router.delete("/:id", requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { error } = await req.supabase!
-      .from("tours")
-      .delete()
-      .eq("id", id);
+    await connectMongoDB();
 
-    if (error) {
-      return sendError(res, "Failed to delete tour: " + error.message, 400);
-    }
+    await MongoTour.findByIdAndDelete(id);
     return sendSuccess(res, null, "Tour deleted successfully");
   } catch (err: any) {
     return sendError(res, err.message, 500);

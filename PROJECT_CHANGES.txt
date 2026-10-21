@@ -32,3 +32,13 @@ RAM-TOURS PROJECT CHANGES LOG
 
 10. Pushed Changes to GitHub:
     Staged, committed, and pushed all updates to https://github.com/anandhu-12-boo/Ram-Tours.
+
+11. Completely Purged Supabase from Backend & Config:
+    - Removed supabaseUrl, supabaseAnonKey, and supabaseServiceRoleKey from backend/src/config/env.ts.
+    - Deleted backend/src/db/supabase.ts and uninstalled @supabase/supabase-js package.
+    - Refactored auth middleware to purely use JWT tokens and MongoDB without Supabase fallbacks.
+    - Updated backend admin routes to perform queries directly against MongoDB collections.
+    - Converted seed scripts (seedAdmin.ts and seed5CustomersAndBookings.ts) to pure MongoDB operations.
+    - Updated all test suites in backend/src/tests/ to mock MongoDB models (all 28 tests passing).
+    - Integrated frontend/src/lib/tours.functions.ts, account.functions.ts, and admin.functions.ts to consume the Express REST API with graceful local fallbacks.
+

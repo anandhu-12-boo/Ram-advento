@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../index.js";
-import { publicSupabaseClient } from "../db/supabase.js";
+import { MongoReview } from "../db/mongodb.js";
 
 describe("Reviews API (/api/reviews)", () => {
   beforeEach(() => {
@@ -10,16 +10,12 @@ describe("Reviews API (/api/reviews)", () => {
 
   it("GET /api/reviews returns approved public reviews", async () => {
     const mockReviews = [
-      { id: "rev-1", author_name: "Anand", rating: 5, comment: "Amazing safari experience!", created_at: "2026-09-01" },
+      { _id: "rev-1", author_name: "Anand", rating: 5, comment: "Amazing safari experience!", createdAt: "2026-09-01" },
     ];
 
-    vi.spyOn(publicSupabaseClient, "from").mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: () => Promise.resolve({ data: mockReviews, error: null }),
-          }),
-        }),
+    vi.spyOn(MongoReview, "find").mockReturnValue({
+      sort: () => ({
+        limit: () => Promise.resolve(mockReviews),
       }),
     } as any);
 
@@ -44,8 +40,8 @@ describe("Reviews API (/api/reviews)", () => {
     expect(res.status).toBe(401);
   });
 
-  it("PUT /api/reviews/:id/approve requires authentication", async () => {
-    const res = await request(app).put("/api/reviews/rev-1/approve").send({ approved: true });
+  it("PUT /api/reviews/:id/moderation requires authentication", async () => {
+    const res = await request(app).put("/api/reviews/rev-1/moderation").send({ approved: true });
     expect(res.status).toBe(401);
   });
 

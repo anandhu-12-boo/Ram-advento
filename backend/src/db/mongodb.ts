@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { config } from "../config/env.js";
 
 export async function connectMongoDB(): Promise<boolean> {
+  if (config.nodeEnv === "test" || process.env.NODE_ENV === "test") {
+    return true;
+  }
+
   if (!config.mongodbUrl) {
     console.warn("⚠️ MONGODB_URL is not set.");
     return false;

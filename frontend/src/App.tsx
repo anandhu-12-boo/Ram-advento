@@ -89,7 +89,7 @@ function ProtectedAdminRoute({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <SiteShell>
+      <SiteShell hideFooter hideMobileBookingBar>
         <div className="flex min-h-[60vh] items-center justify-center pt-24">
           <BrandLogo size={64} priority />
         </div>

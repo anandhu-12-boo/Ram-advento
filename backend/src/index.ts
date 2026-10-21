@@ -41,6 +41,7 @@ app.use("/api/tours", toursRouter);
 app.use("/api/availability", availabilityRouter);
 app.use("/api/bookings", bookingsRouter);
 app.use("/api/account", accountRouter);
+app.use("/api/auth", accountRouter);
 app.use("/api/enquiries", enquiriesRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/admin", adminRouter);

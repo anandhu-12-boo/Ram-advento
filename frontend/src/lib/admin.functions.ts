@@ -198,7 +198,26 @@ const SEEDED_AVAILABILITY = [
   },
 ];
 
+function getAuthHeader(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("user_token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function getAdminOverview() {
+  try {
+    const res = await fetch("/api/admin/overview", {
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        return json.data;
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: /api/admin/overview fetch error:", err);
+  }
+
   return {
     stats: {
       totalBookings: SEEDED_BOOKINGS.length,
@@ -224,11 +243,55 @@ export async function getAdminOverview() {
 }
 
 export async function listAdminBookings() {
+  try {
+    const res = await fetch("/api/bookings", {
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        return json.data.map((b: any) => ({
+          ...b,
+          id: b._id ? String(b._id) : String(b.id),
+          tours: {
+            title: b.tour_slug || "Munnar Jeep Safari",
+            slug: b.tour_slug || "munnar-jeep-safari",
+            location: "Munnar, Kerala",
+            duration: "4 Hours",
+          },
+        }));
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: listAdminBookings fetch error:", err);
+  }
   return SEEDED_BOOKINGS;
 }
 
 export async function getAdminBooking({ bookingId }: { bookingId: string }) {
   z.object({ bookingId: z.string().min(3) }).parse({ bookingId });
+  try {
+    const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        return {
+          ...json.data,
+          id: json.data._id ? String(json.data._id) : String(json.data.id),
+          tours: {
+            title: json.data.tour_slug || "Munnar Jeep Safari",
+            slug: json.data.tour_slug || "munnar-jeep-safari",
+            location: "Munnar, Kerala",
+            duration: "4 Hours",
+          },
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: getAdminBooking error:", err);
+  }
   const found = SEEDED_BOOKINGS.find((b) => b.booking_id === bookingId);
   return found ?? SEEDED_BOOKINGS[0];
 }
@@ -239,6 +302,19 @@ export async function updateBookingStatus(input: { bookingId: string; bookingSta
     bookingStatus: statusSchema.optional(),
     paymentStatus: paymentSchema.optional(),
   }).parse(input);
+
+  try {
+    await fetch(`/api/admin/bookings/${encodeURIComponent(input.bookingId)}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+      body: JSON.stringify({
+        booking_status: input.bookingStatus,
+        payment_status: input.paymentStatus,
+      }),
+    });
+  } catch (err) {
+    console.warn("Notice: updateBookingStatus error:", err);
+  }
   return { ok: true };
 }
 

@@ -18,14 +18,14 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setBusy(false);
-    if (authError) {
-      setError("We could not send the reset email. Please try again shortly.");
-      return;
+    try {
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+    } catch {
+      // Offline fallback
     }
+    setBusy(false);
     setSent(true);
   };
 

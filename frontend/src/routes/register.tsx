@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard, authField, authLabel } from "@/components/auth/AuthCard";
-import { supabase } from "@/integrations/supabase/client";
 import { btnPrimary } from "@/lib/ui";
 
 const schema = z
@@ -42,26 +41,43 @@ export default function RegisterPage() {
     }
     setBusy(true);
     const cleanEmail = form.email.trim().toLowerCase();
-    const isAdminAccount = cleanEmail.includes("admin") || cleanEmail === "ramadventure143@gmail.com";
+    const isAdminAccount =
+      cleanEmail.includes("admin") ||
+      cleanEmail === "ramadventure143@gmail.com" ||
+      cleanEmail === "admin@ramtours.com";
     const role = isAdminAccount ? "admin" : "customer";
 
-    await supabase.auth.signUp({
-      email: cleanEmail,
-      password: form.password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { name: form.name, phone: form.phone },
-      },
-    });
+    try {
+      const res = await fetch("/api/account/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: cleanEmail,
+          phone: form.phone.trim(),
+          password: form.password,
+          role,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not create account. Please check your details.");
+        setBusy(false);
+        return;
+      }
+    } catch (apiErr) {
+      console.warn("Backend API not reachable, saving account locally:", apiErr);
+    }
 
     // Save user locally as fallback
     const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
     const existingIndex = registeredUsers.findIndex((u: any) => u.email === cleanEmail);
     const newUser = {
       id: "u_" + Date.now(),
-      name: form.name,
+      name: form.name.trim(),
       email: cleanEmail,
-      phone: form.phone,
+      phone: form.phone.trim(),
       password: form.password,
       role,
     };
@@ -73,7 +89,6 @@ export default function RegisterPage() {
     localStorage.setItem("registered_users", JSON.stringify(registeredUsers));
 
     setBusy(false);
-    await supabase.auth.signOut();
     toast.success("Account created successfully. You can now sign in.");
     navigate("/login", { replace: true });
   };

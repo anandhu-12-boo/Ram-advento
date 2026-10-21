@@ -41,7 +41,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
   if (loading || !isAdmin) {
     return (
-      <SiteShell>
+      <SiteShell hideFooter hideMobileBookingBar>
         <section className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-6 pt-24 text-center">
           <div>
             <BrandLogo size={82} priority />
@@ -56,12 +56,17 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const signOut = async () => {
     localStorage.removeItem("admin_session");
     localStorage.removeItem("user_session");
-    await supabase.auth.signOut();
+    localStorage.removeItem("user_token");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Supabase optional
+    }
     navigate("/login", { replace: true });
   };
 
   return (
-    <SiteShell>
+    <SiteShell hideFooter hideMobileBookingBar>
       <section className="mx-auto grid max-w-7xl gap-8 px-4 pt-32 pb-24 sm:px-6 lg:grid-cols-[240px_1fr]">
         <aside className="h-fit rounded-sm border border-white/10 bg-forest-deep/60 p-5 lg:sticky lg:top-28">
           <div className="flex items-center gap-3 border-b border-white/10 pb-5">

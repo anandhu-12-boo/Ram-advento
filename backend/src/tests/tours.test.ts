@@ -1,16 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../index.js";
-import { publicSupabaseClient } from "../db/supabase.js";
 import { MongoTour } from "../db/mongodb.js";
 
 describe("Tours API (/api/tours)", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.spyOn(MongoTour, "findOne").mockResolvedValue(null as any);
-    vi.spyOn(MongoTour, "find").mockReturnValue({
-      sort: () => Promise.resolve([]),
-    } as any);
   });
 
   it("GET /api/tours returns list of available tours", async () => {
@@ -19,39 +14,27 @@ describe("Tours API (/api/tours)", () => {
       { id: "2", title: "Kolukkumalai Adventure", slug: "kolukkumalai-adventure", price: 4500, available: true },
     ];
 
-    vi.spyOn(publicSupabaseClient, "from").mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          order: () => Promise.resolve({ data: mockTours, error: null }),
-          eq: () => ({
-            order: () => Promise.resolve({ data: mockTours, error: null }),
-          }),
-        }),
-      }),
+    vi.spyOn(MongoTour, "find").mockReturnValue({
+      sort: () => Promise.resolve(mockTours),
     } as any);
 
     const res = await request(app).get("/api/tours");
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBe(2);
   });
 
   it("GET /api/tours/:slug returns tour detail when tour exists", async () => {
     const mockTour = {
-      id: "1",
+      _id: "507f1f77bcf86cd799439011",
       title: "Munnar Jeep Safari",
       slug: "munnar-jeep-safari",
       price: 2500,
       description: "Off-road run",
     };
 
-    vi.spyOn(publicSupabaseClient, "from").mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: mockTour, error: null }),
-        }),
-      }),
-    } as any);
+    vi.spyOn(MongoTour, "findOne").mockResolvedValue(mockTour as any);
 
     const res = await request(app).get("/api/tours/munnar-jeep-safari");
     expect(res.status).toBe(200);
@@ -60,13 +43,7 @@ describe("Tours API (/api/tours)", () => {
   });
 
   it("GET /api/tours/:slug returns 404 when tour does not exist", async () => {
-    vi.spyOn(publicSupabaseClient, "from").mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-    } as any);
+    vi.spyOn(MongoTour, "findOne").mockResolvedValue(null as any);
 
     const res = await request(app).get("/api/tours/non-existent-tour");
     expect(res.status).toBe(404);

@@ -58,44 +58,71 @@ export default function AdminSettingsPage() {
     try {
       const email = user?.email || "admin@ramtours.com";
 
-      // 1. Attempt verification of current password via Supabase Auth
-      const { error: verifyError } = await supabase.auth.signInWithPassword({
-        email,
-        password: currentPassword,
-      });
-
-      if (verifyError) {
-        // Fallback check for admin local session or static admin password
-        const adminSessionRaw = localStorage.getItem("admin_session");
-        let validLocalAdmin = false;
-        if (adminSessionRaw) {
-          try {
-            const adminSession = JSON.parse(adminSessionRaw);
-            if (adminSession?.user?.email === email || adminSession?.role === "admin") {
-              if (currentPassword === "AdminPassword123!" || currentPassword === "admin123" || currentPassword === "Password123!") {
-                validLocalAdmin = true;
-              }
+      // 1. Attempt verification of current password via backend / localStorage / Supabase
+      let verified = false;
+      const adminSessionRaw = localStorage.getItem("admin_session");
+      if (adminSessionRaw) {
+        try {
+          const adminSession = JSON.parse(adminSessionRaw);
+          if (adminSession?.user?.email === email || adminSession?.role === "admin") {
+            if (currentPassword === "AdminPassword123!" || currentPassword === "admin123" || currentPassword === "Password123!") {
+              verified = true;
             }
-          } catch (e) {
-            console.warn("Notice: admin_session parse error:", e);
           }
-        }
-
-        if (!validLocalAdmin && currentPassword !== "AdminPassword123!" && currentPassword !== "admin123") {
-          setError("Your current password is incorrect.");
-          setBusy(false);
-          return;
+        } catch (e) {
+          console.warn("Notice: admin_session parse error:", e);
         }
       }
 
-      // 2. Update password in Supabase
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      if (!verified && (currentPassword === "AdminPassword123!" || currentPassword === "admin123")) {
+        verified = true;
+      }
 
-      if (updateError) {
-        // Fallback if Supabase account is managed locally/seeded
-        console.warn("Notice: Supabase password update warning:", updateError.message);
+      // Check registered users locally as well
+      const localUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
+      const matchedLocal = localUsers.find((u: any) => (u.email === email || u.role === "admin") && u.password === currentPassword);
+      if (matchedLocal) {
+        verified = true;
+      }
+
+      try {
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+          email,
+          password: currentPassword,
+        });
+        if (!verifyError) verified = true;
+      } catch {
+        // Supabase optional
+      }
+
+      if (!verified) {
+        setError("Your current password is incorrect.");
+        setBusy(false);
+        return;
+      }
+
+      // 2. Update password in MongoDB backend if token exists
+      const userToken = localStorage.getItem("user_token");
+      if (userToken) {
+        try {
+          await fetch("/api/account/change-password", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({ currentPassword, newPassword }),
+          });
+        } catch {
+          // Backend optional
+        }
+      }
+
+      // Update password in Supabase if active
+      try {
+        await supabase.auth.updateUser({ password: newPassword });
+      } catch {
+        // Supabase optional
       }
 
       // Update registered_users in local storage if exists

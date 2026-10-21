@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { z } from "zod";
 import { sendError, sendSuccess } from "../utils/response.js";
 import { requireAuth, requireAdmin, AuthenticatedRequest } from "../middleware/auth.js";
+import { connectMongoDB, MongoBooking, MongoTour } from "../db/mongodb.js";
 
 const router = Router();
 
@@ -10,53 +11,45 @@ const createBookingSchema = z.object({
   date: z.string().min(8),
   time: z.string().min(3),
   guests: z.number().int().min(1).max(12),
-  vehicle: z.string().max(80),
-  pickup: z.string().max(120),
-  special: z.string().max(1000).optional(),
-  name: z.string().max(120).optional(),
-  phone: z.string().max(30).optional(),
+  vehicle: z.string().max(80).optional().default("Mahindra Thar 4x4"),
+  pickup: z.string().max(120).optional().default("Munnar Town"),
+  special: z.string().max(1000).optional().default(""),
+  name: z.string().max(120).optional().default("Guest"),
+  phone: z.string().max(30).optional().default(""),
 });
-
-const bookingErrors: Record<string, string> = {
-  AUTH_REQUIRED: "Please sign in to book.",
-  INVALID_GUESTS: "Choose at least one guest.",
-  INVALID_DATE: "Pick a date from today onwards.",
-  TOUR_NOT_FOUND: "That adventure is not available right now.",
-  GUEST_LIMIT: "That is more guests than this jeep allows — contact us for a convoy.",
-  SLOT_CLOSED: "That time slot is closed. Please pick another.",
-  SLOT_FULL: "That time slot is fully booked. Please pick another.",
-  BOOKING_NOT_FOUND: "Booking not found.",
-};
-
-function formatBookingError(message: string): string {
-  for (const key of Object.keys(bookingErrors)) {
-    if (message.includes(key)) return bookingErrors[key]!;
-  }
-  return message || "Something went wrong creating your booking.";
-}
 
 // POST /api/bookings - Create new booking
 router.post("/", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parsed = createBookingSchema.parse(req.body);
-    const { data: booking, error } = await req.supabase!.rpc("create_booking", {
-      p_tour_slug: parsed.slug,
-      p_date: parsed.date,
-      p_time: parsed.time,
-      p_guests: parsed.guests,
-      p_vehicle: parsed.vehicle,
-      p_pickup: parsed.pickup,
-      p_special: parsed.special ?? "",
-      p_name: parsed.name ?? "",
-      p_phone: parsed.phone ?? "",
+    await connectMongoDB();
+
+    const tour = await MongoTour.findOne({ slug: parsed.slug });
+    const basePrice = tour ? tour.price : parsed.slug.includes("kolukkumalai") ? 4500 : 2500;
+    const totalAmount = basePrice + Math.max(0, parsed.guests - 4) * 400;
+
+    const bookingId = "RAM-" + Date.now().toString().slice(-6);
+
+    const booking = await MongoBooking.create({
+      booking_id: bookingId,
+      user_id: req.userId || "anonymous",
+      tour_id: tour ? tour._id.toString() : "",
+      tour_slug: parsed.slug,
+      customer_name: parsed.name || req.user?.user_metadata?.name || "Customer",
+      customer_email: req.user?.email || "customer@ramtours.com",
+      customer_phone: parsed.phone || "",
+      booking_date: parsed.date,
+      time_slot: parsed.time,
+      guests: parsed.guests,
+      vehicle: parsed.vehicle || "Mahindra Thar 4x4",
+      pickup_location: parsed.pickup || "Tea County Munnar",
+      special_request: parsed.special || "",
+      total_amount: totalAmount,
+      payment_status: "pending",
+      booking_status: "confirmed",
     });
 
-    if (error) {
-      return sendError(res, formatBookingError(error.message), 400);
-    }
-
-    const row = Array.isArray(booking) ? booking[0] : booking;
-    return sendSuccess(res, row, "Booking created successfully", 201);
+    return sendSuccess(res, booking, "Booking created successfully", 201);
   } catch (err: any) {
     if (err instanceof z.ZodError) {
       return sendError(res, err.errors.map((e) => e.message).join(", "), 400);
@@ -68,15 +61,15 @@ router.post("/", requireAuth, async (req: AuthenticatedRequest, res: Response) =
 // GET /api/bookings/my - List customer's own bookings
 router.get("/my", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { data, error } = await req.supabase!
-      .from("bookings")
-      .select("*, tours(title,slug,location,duration,images,vehicle)")
-      .order("created_at", { ascending: false });
+    await connectMongoDB();
+    const bookings = await MongoBooking.find({
+      $or: [
+        { user_id: req.userId },
+        { customer_email: req.user?.email },
+      ],
+    }).sort({ createdAt: -1 });
 
-    if (error) {
-      return sendError(res, "Could not load bookings: " + error.message, 500);
-    }
-    return sendSuccess(res, data || []);
+    return sendSuccess(res, bookings);
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -86,19 +79,15 @@ router.get("/my", requireAuth, async (req: AuthenticatedRequest, res: Response) 
 router.get("/:bookingId", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const { data, error } = await req.supabase!
-      .from("bookings")
-      .select("*, tours(title,slug,location,duration,images,vehicle,price)")
-      .eq("booking_id", bookingId)
-      .maybeSingle();
+    await connectMongoDB();
+    const booking = await MongoBooking.findOne({
+      $or: [{ booking_id: bookingId }, { _id: bookingId }],
+    });
 
-    if (error) {
-      return sendError(res, "Could not load booking detail: " + error.message, 500);
-    }
-    if (!data) {
+    if (!booking) {
       return sendError(res, "Booking not found", 404);
     }
-    return sendSuccess(res, data);
+    return sendSuccess(res, booking);
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -108,14 +97,17 @@ router.get("/:bookingId", requireAuth, async (req: AuthenticatedRequest, res: Re
 router.post("/:bookingId/cancel", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { bookingId } = req.params;
-    const { data, error } = await req.supabase!.rpc("cancel_booking", {
-      p_booking_id: bookingId,
-    });
+    await connectMongoDB();
+    const booking = await MongoBooking.findOneAndUpdate(
+      { $or: [{ booking_id: bookingId }, { _id: bookingId }] },
+      { booking_status: "cancelled" },
+      { new: true }
+    );
 
-    if (error) {
-      return sendError(res, formatBookingError(error.message), 400);
+    if (!booking) {
+      return sendError(res, "Booking not found", 404);
     }
-    return sendSuccess(res, data, "Booking cancelled successfully");
+    return sendSuccess(res, booking, "Booking cancelled successfully");
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
@@ -126,39 +118,33 @@ router.post("/:bookingId/pay", requireAuth, async (req: AuthenticatedRequest, re
   try {
     const { bookingId } = req.params;
     const { paymentId = `PAY-${Date.now()}` } = req.body;
+    await connectMongoDB();
 
-    const { data, error } = await req.supabase!
-      .from("bookings")
-      .update({
+    const booking = await MongoBooking.findOneAndUpdate(
+      { $or: [{ booking_id: bookingId }, { _id: bookingId }] },
+      {
         payment_status: "paid",
         booking_status: "confirmed",
         payment_id: paymentId,
-      })
-      .eq("booking_id", bookingId)
-      .select()
-      .single();
+      },
+      { new: true }
+    );
 
-    if (error) {
-      return sendError(res, "Payment update failed: " + error.message, 400);
+    if (!booking) {
+      return sendError(res, "Booking not found", 404);
     }
-    return sendSuccess(res, data, "Payment confirmed and booking updated.");
+    return sendSuccess(res, booking, "Payment confirmed successfully");
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }
 });
 
-// GET /api/bookings - Admin view all bookings
+// GET /api/bookings - Admin list all bookings
 router.get("/", requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { data, error } = await req.supabase!
-      .from("bookings")
-      .select("*, tours(title,slug)")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      return sendError(res, "Failed to load bookings: " + error.message, 500);
-    }
-    return sendSuccess(res, data || []);
+    await connectMongoDB();
+    const bookings = await MongoBooking.find().sort({ createdAt: -1 });
+    return sendSuccess(res, bookings);
   } catch (err: any) {
     return sendError(res, err.message, 500);
   }

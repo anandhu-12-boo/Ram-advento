@@ -25,8 +25,8 @@ Ensure `.env` contains:
 ```env
 PORT=5000
 NODE_ENV=development
-SUPABASE_URL=https://c--db38bc43-93f9-46f0-b1ad-c2fcd1040fcb-prod.lovable.cloud
-SUPABASE_ANON_KEY=sb_publishable_EKJnsCH26E6X0gXBBcjXLQ_I8MJxNvC
+MONGODB_URL=mongodb+srv://sojan:oXT3qEx7HHmlUNsd@cluster0.vvjc2.mongodb.net/ramms?appName=Cluster0
+AUTH_SECRET=ram-adventure-secret-token-key-2026
 ```
 
 ### 3. Running in Development

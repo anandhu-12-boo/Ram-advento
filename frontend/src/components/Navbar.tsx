@@ -25,7 +25,14 @@ function AccountLinks({ stacked = false }: { stacked?: boolean }) {
   const navigate = useNavigate();
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem("admin_session");
+    localStorage.removeItem("user_session");
+    localStorage.removeItem("user_token");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Supabase optional
+    }
     navigate("/login", { replace: true });
   };
 

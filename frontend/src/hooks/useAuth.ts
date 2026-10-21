@@ -14,26 +14,40 @@ export function useSupabaseSession() {
       if (active) setLoading(false);
     };
 
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!active) return;
-        setSession(data.session);
-        finish();
-      })
-      .catch(() => finish());
+    // Safety timeout to avoid hanging when Supabase is not in use
+    const timeout = setTimeout(finish, 100);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, next) => {
-      setSession(next);
+    try {
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (!active) return;
+          clearTimeout(timeout);
+          setSession(data?.session || null);
+          finish();
+        })
+        .catch(() => {
+          clearTimeout(timeout);
+          finish();
+        });
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, next) => {
+        if (active) {
+          setSession(next);
+          finish();
+        }
+      });
+
+      return () => {
+        active = false;
+        clearTimeout(timeout);
+        subscription.unsubscribe();
+      };
+    } catch {
       finish();
-    });
-
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
+    }
   }, []);
 
   return { session, loading };
@@ -55,19 +69,29 @@ export function useAuth() {
     }
   }, [supabaseSession]);
 
-  const activeSession = supabaseSession || (parsedAdminSession ? { user: parsedAdminSession.user } : parsedUserSession ? { user: parsedUserSession.user } : null);
-  const isAdmin = Boolean(parsedAdminSession) || (Boolean(supabaseSession) && Boolean(accountData?.isAdmin)) || parsedUserSession?.role === "admin";
+  const activeSession =
+    supabaseSession ||
+    (parsedAdminSession ? { user: parsedAdminSession.user } : parsedUserSession ? { user: parsedUserSession.user } : null);
+
+  const isAdmin =
+    Boolean(parsedAdminSession) ||
+    (Boolean(supabaseSession) && Boolean(accountData?.isAdmin)) ||
+    parsedUserSession?.role === "admin";
+
+  const userDisplayName =
+    parsedUserSession?.user?.name ||
+    parsedAdminSession?.user?.name ||
+    accountData?.profile?.name ||
+    parsedAdminSession?.user?.email?.split("@")[0] ||
+    activeSession?.user?.email?.split("@")[0] ||
+    "Traveller";
 
   return {
     session: activeSession,
     user: activeSession?.user ?? null,
     loading: supabaseLoading && !parsedAdminSession && !parsedUserSession,
-    profile: accountData?.profile ?? null,
+    profile: accountData?.profile ?? (parsedUserSession ? parsedUserSession.user : null),
     isAdmin,
-    displayName:
-      parsedAdminSession?.user?.email?.split("@")[0] ||
-      accountData?.profile?.name ||
-      activeSession?.user?.email?.split("@")[0] ||
-      "Traveller",
+    displayName: userDisplayName,
   };
 }

@@ -1,5 +1,4 @@
-import { publicSupabaseClient } from "./supabase.js";
-import { connectMongoDB, MongoBooking, MongoTour } from "./mongodb.js";
+import { connectMongoDB, MongoBooking, MongoTour, MongoUser } from "./mongodb.js";
 
 const DEFAULT_TOURS = [
   {
@@ -117,102 +116,41 @@ const customersAndBookings = [
 ];
 
 async function seed() {
-  console.log("🌱 Starting 5 Customers & Accepted Bookings seeding...");
+  console.log("🌱 Starting 5 Customers & Accepted Bookings seeding into MongoDB...");
 
-  // 1. Seed MongoDB Tours & Bookings
   const mongoOk = await connectMongoDB();
-  if (mongoOk) {
-    for (const t of DEFAULT_TOURS) {
-      await MongoTour.findOneAndUpdate({ slug: t.slug }, t, { upsert: true, returnDocument: 'after' });
-    }
-    for (const b of customersAndBookings) {
-      await MongoBooking.findOneAndUpdate(
-        { booking_id: b.ref },
-        {
-          booking_id: b.ref,
-          user_id: b.user_id,
-          tour_slug: b.tour_slug,
-          customer_name: b.name,
-          customer_email: b.email,
-          customer_phone: b.phone,
-          booking_date: b.date,
-          time_slot: b.time,
-          guests: b.guests,
-          vehicle: b.vehicle,
-          pickup_location: b.pickup,
-          special_request: b.special,
-          total_amount: b.total_amount,
-          payment_status: b.payment_status,
-          booking_status: b.booking_status,
-        },
-        { upsert: true, returnDocument: 'after' }
-      );
-    }
-    console.log("✅ 5 Customers & Bookings seeded into MongoDB!");
+  if (!mongoOk) {
+    console.error("❌ Failed to connect to MongoDB.");
+    process.exit(1);
   }
 
-  // 2. Ensure Supabase Tours exist
-  const tourMap = new Map<string, string>();
+  // 1. Seed Tours
   for (const t of DEFAULT_TOURS) {
-    let { data: tourData } = await publicSupabaseClient
-      .from("tours")
-      .select("id")
-      .eq("slug", t.slug)
-      .maybeSingle();
-
-    if (!tourData) {
-      const { data: insertedTour } = await publicSupabaseClient
-        .from("tours")
-        .insert({
-          title: t.title,
-          slug: t.slug,
-          tagline: t.tagline,
-          description: t.description,
-          category: t.category,
-          location: t.location,
-          duration: t.duration,
-          price: t.price,
-          max_guests: t.max_guests,
-          vehicle: t.vehicle,
-        })
-        .select("id")
-        .single();
-      tourData = insertedTour;
-    }
-    if (tourData?.id) {
-      tourMap.set(t.slug, tourData.id);
-    }
+    await MongoTour.findOneAndUpdate({ slug: t.slug }, t, { upsert: true, returnDocument: "after" });
   }
 
-  // 3. Seed Supabase Profiles & Bookings
+  // 2. Seed Customers and Bookings
   for (const b of customersAndBookings) {
-    let tourId = tourMap.get(b.tour_slug);
-    if (!tourId) {
-      const { data: tRow } = await publicSupabaseClient.from("tours").select("id").limit(1).single();
-      tourId = tRow?.id;
-    }
-    if (!tourId) {
-      console.warn(`No tour available for ${b.tour_slug}`);
-      continue;
-    }
-
-    // Insert/Upsert profile
-    await publicSupabaseClient.from("profiles").upsert(
+    // Upsert customer user
+    await MongoUser.findOneAndUpdate(
+      { email: b.email.toLowerCase() },
       {
-        id: b.user_id,
         name: b.name,
-        email: b.email,
+        email: b.email.toLowerCase(),
+        password: "CustomerPassword123!",
+        role: "customer",
         phone: b.phone,
       },
-      { onConflict: "id" }
+      { upsert: true, returnDocument: "after" }
     );
 
-    // Insert/Upsert booking
-    const { error: bErr } = await publicSupabaseClient.from("bookings").upsert(
+    // Upsert booking
+    await MongoBooking.findOneAndUpdate(
+      { booking_id: b.ref },
       {
         booking_id: b.ref,
         user_id: b.user_id,
-        tour_id: tourId,
+        tour_slug: b.tour_slug,
         customer_name: b.name,
         customer_email: b.email,
         customer_phone: b.phone,
@@ -226,15 +164,11 @@ async function seed() {
         payment_status: b.payment_status,
         booking_status: b.booking_status,
       },
-      { onConflict: "booking_id" }
+      { upsert: true, returnDocument: "after" }
     );
-
-    if (bErr) {
-      console.error(`Supabase booking insert error for ${b.ref}:`, bErr.message);
-    }
   }
 
-  console.log("✅ 5 Customers & Bookings seeded into Supabase!");
+  console.log("✅ 5 Customers & Bookings seeded successfully into MongoDB!");
   process.exit(0);
 }
 

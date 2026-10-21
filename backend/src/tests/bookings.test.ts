@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../index.js";
-import { publicSupabaseClient } from "../db/supabase.js";
 
 describe("Bookings API (/api/bookings)", () => {
   beforeEach(() => {

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthCard, authField, authLabel } from "@/components/auth/AuthCard";
-import { supabase } from "@/integrations/supabase/client";
 import { btnPrimary } from "@/lib/ui";
 
 function safePath(value: string | null) {
@@ -29,7 +28,7 @@ export default function LoginPage() {
     setError(null);
     const cleanEmail = email.trim().toLowerCase();
 
-    // Check admin credentials fallback
+    // 1. Check admin hardcoded credentials fallback
     const isAdminCreds =
       (cleanEmail === "admin_test_flow@example.com" ||
         cleanEmail === "admin@ramtours.com" ||
@@ -39,11 +38,12 @@ export default function LoginPage() {
 
     if (isAdminCreds) {
       const adminSession = {
-        user: { id: "00000000-0000-4000-a000-000000000000", email: cleanEmail },
+        user: { id: "00000000-0000-4000-a000-000000000000", email: cleanEmail, name: "Ram Adventure Admin" },
         role: "admin",
         loggedInAt: new Date().toISOString(),
       };
       localStorage.setItem("admin_session", JSON.stringify(adminSession));
+      localStorage.setItem("user_session", JSON.stringify(adminSession));
       toast.success("Welcome back, Admin!");
       const target = safePath(redirect) ?? "/admin";
       navigate(target, { replace: true });
@@ -51,32 +51,66 @@ export default function LoginPage() {
       return;
     }
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-    if (authError) {
-      // Check registered accounts in localStorage
-      const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
-      const matched = registeredUsers.find((u: any) => u.email === cleanEmail && u.password === password);
-      if (matched) {
-        const userSession = { user: { id: matched.id, email: matched.email }, role: matched.role || "customer" };
-        localStorage.setItem("user_session", JSON.stringify(userSession));
-        toast.success("Welcome back!");
-        const target = safePath(redirect) ?? (matched.role === "admin" ? "/admin" : "/tours");
+    // 2. Try MongoDB backend login
+    try {
+      const res = await fetch("/api/account/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.data?.user) {
+        const user = data.data.user;
+        const token = data.data.token;
+        if (token) localStorage.setItem("user_token", token);
+
+        const session = {
+          user: { id: user.id, email: user.email, name: user.name, phone: user.phone },
+          role: user.role || "customer",
+        };
+
+        if (user.role === "admin") {
+          localStorage.setItem("admin_session", JSON.stringify(session));
+        } else {
+          localStorage.removeItem("admin_session");
+        }
+        localStorage.setItem("user_session", JSON.stringify(session));
+
+        toast.success(user.role === "admin" ? "Welcome back, Admin!" : "Welcome back!");
+        const target = safePath(redirect) ?? (user.role === "admin" ? "/admin" : "/tours");
         navigate(target, { replace: true });
         setBusy(false);
         return;
       }
+    } catch (apiErr) {
+      console.warn("Backend login unavailable, checking local storage:", apiErr);
+    }
 
-      setError(
-        authError.message.toLowerCase().includes("invalid")
-          ? "That email and password combination does not match an account."
-          : "We could not sign you in. Please check your email and password.",
-      );
+    // 3. Check registered accounts in localStorage fallback
+    const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
+    const matched = registeredUsers.find((u: any) => u.email === cleanEmail && u.password === password);
+    if (matched) {
+      const userSession = {
+        user: { id: matched.id, email: matched.email, name: matched.name, phone: matched.phone },
+        role: matched.role || "customer",
+      };
+      if (matched.role === "admin") {
+        localStorage.setItem("admin_session", JSON.stringify(userSession));
+      } else {
+        localStorage.removeItem("admin_session");
+      }
+      localStorage.setItem("user_session", JSON.stringify(userSession));
+
+      toast.success("Welcome back!");
+      const target = safePath(redirect) ?? (matched.role === "admin" ? "/admin" : "/tours");
+      navigate(target, { replace: true });
       setBusy(false);
       return;
     }
-    toast.success("Welcome back.");
-    const target = safePath(redirect) ?? "/tours";
-    navigate(target, { replace: true });
+
+    setError("That email and password combination does not match an account.");
+    setBusy(false);
   };
 
   return (
